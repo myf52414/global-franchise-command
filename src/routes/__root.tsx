@@ -12,6 +12,8 @@ import { useEffect, type ReactNode } from "react";
 import appCss from "../styles.css?url";
 import { reportLovableError } from "../lib/lovable-error-reporting";
 import { TopBar } from "../components/boss/TopBar";
+import { SessionProvider } from "../lib/session";
+import { ToastProvider } from "../lib/toast";
 
 function NotFoundComponent() {
   return (
@@ -119,7 +121,11 @@ function RootComponent() {
 
   return (
     <QueryClientProvider client={queryClient}>
-      <BossShell />
+      <SessionProvider>
+        <ToastProvider>
+          <BossShell />
+        </ToastProvider>
+      </SessionProvider>
     </QueryClientProvider>
   );
 }
