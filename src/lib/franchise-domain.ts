@@ -88,7 +88,7 @@ export const ROLE_PERMISSIONS: Record<Role, Permission[]> = {
 };
 
 export const STATUS_TONE: Record<
-  FranchiseStatus | ApplicationStage,
+  string,
   "success" | "warning" | "destructive" | "info" | "neutral"
 > = {
   active: "success",
@@ -108,6 +108,17 @@ export const STATUS_TONE: Record<
   payment_verification: "warning",
   approved: "success",
   rejected: "destructive",
+  // License statuses
+  expiring: "warning",
+  expired: "destructive",
+  revoked: "destructive",
+  // Commission / invoice statuses
+  draft: "neutral",
+  paid: "success",
+  held: "warning",
+  issued: "info",
+  overdue: "destructive",
+  void: "neutral",
 };
 
 export const STAGE_LABEL: Record<ApplicationStage, string> = {

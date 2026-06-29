@@ -53,13 +53,117 @@ export type Territory = {
   locked: boolean;
 };
 
+export type LicenseStatus =
+  | "active"
+  | "suspended"
+  | "expiring"
+  | "expired"
+  | "revoked"
+  | "pending";
+
+export type LicensePlan = "starter" | "growth" | "scale" | "enterprise";
+
+export type License = {
+  id: string;
+  key: string;
+  franchiseId: string;
+  franchise: string;
+  plan: LicensePlan;
+  devices: number;
+  devicesMax: number;
+  domains: number;
+  domainsMax: number;
+  issuedAt: string;
+  expiresAt: string;
+  status: LicenseStatus;
+  kycVerified: boolean;
+  complianceCleared: boolean;
+};
+
+export type CommissionStatus =
+  | "draft"
+  | "pending"
+  | "approved"
+  | "paid"
+  | "held"
+  | "rejected";
+
+export type CommissionRule = {
+  id: string;
+  name: string;
+  scope: "global" | "country" | "tier" | "franchise";
+  scopeValue: string | null;
+  basis: "revenue" | "license" | "renewal" | "product";
+  ratePct: number;
+  minPayout: number;
+  active: boolean;
+  updatedAt: string;
+};
+
+export type Commission = {
+  id: string;
+  cycle: string;
+  franchiseId: string;
+  franchise: string;
+  base: number;
+  ratePct: number;
+  adjustment: number;
+  tax: number;
+  payable: number;
+  status: CommissionStatus;
+  approver: string | null;
+};
+
+export type RevenueStream =
+  | "royalty"
+  | "subscription"
+  | "license"
+  | "renewal"
+  | "product";
+
+export type InvoiceStatus = "draft" | "issued" | "paid" | "overdue" | "void";
+
+export type Invoice = {
+  id: string;
+  number: string;
+  franchiseId: string;
+  franchise: string;
+  type: RevenueStream;
+  amount: number;
+  tax: number;
+  status: InvoiceStatus;
+  issuedAt: string;
+  dueAt: string;
+  country: string;
+};
+
+export type RevenueKpis = {
+  mtd: number;
+  qtd: number;
+  ytd: number;
+  royalty: number;
+  subscription: number;
+  license: number;
+  renewal: number;
+  pending: number;
+  tax: number;
+};
+
+export type AuditEntry = {
+  id: string;
+  at: string;
+  actor: string;
+  action: string;
+  target: string;
+  meta?: string;
+};
+
 // Generic empty responder. Replace queryFn with real server fn calls.
 // e.g. queryFn: () => useServerFn(getApplications)({ data: params })
-function emptyResource<T>(_key: string) {
+function emptyResource<T>(key: string) {
   return useQuery<T[]>({
-    queryKey: [_key],
+    queryKey: [key],
     queryFn: async () => [],
-    // Until backend is wired we don't actively refetch.
     staleTime: Infinity,
   });
 }
@@ -67,3 +171,22 @@ function emptyResource<T>(_key: string) {
 export const useApplications = () => emptyResource<Application>("applications");
 export const useFranchises = () => emptyResource<Franchise>("franchises");
 export const useTerritories = () => emptyResource<Territory>("territories");
+
+export const useLicenses = () => emptyResource<License>("licenses");
+export const useCommissionRules = () => emptyResource<CommissionRule>("commission-rules");
+export const useCommissions = () => emptyResource<Commission>("commissions");
+export const useInvoices = () => emptyResource<Invoice>("invoices");
+
+export const useRevenueKpis = () =>
+  useQuery<RevenueKpis | null>({
+    queryKey: ["revenue-kpis"],
+    queryFn: async () => null,
+    staleTime: Infinity,
+  });
+
+export const useAuditTrail = (scope: string, targetId?: string) =>
+  useQuery<AuditEntry[]>({
+    queryKey: ["audit", scope, targetId ?? "*"],
+    queryFn: async () => [],
+    staleTime: Infinity,
+  });
