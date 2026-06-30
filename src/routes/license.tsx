@@ -18,8 +18,9 @@ import {
 import { useCan } from "@/lib/session";
 import { useToast } from "@/lib/toast";
 import { useShortcuts } from "@/lib/shortcuts";
-import { exportCsv, fmtNumber } from "@/lib/export";
-import { Download, KeyRound, Plus, RefreshCw, ShieldAlert, ShieldCheck } from "lucide-react";
+import { ExportMenu } from "@/components/boss/ExportMenu";
+import { fmtNumber } from "@/lib/export";
+import { FileCheck2, KeyRound, Paperclip, Plus, RefreshCw, ShieldAlert, ShieldCheck, UploadCloud, X } from "lucide-react";
 
 export const Route = createFileRoute("/license")({
   head: () => ({ meta: [{ title: "License · Boss Panel" }] }),
