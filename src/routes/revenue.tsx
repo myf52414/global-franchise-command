@@ -1,10 +1,12 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useMemo, useState } from "react";
-import { Btn, Card, Section, Stat, WallBody, WallHeader } from "@/components/boss/Wall";
+import { Btn, Card, Stat, Section, WallBody, WallHeader } from "@/components/boss/Wall";
 import { Toolbar } from "@/components/boss/Toolbar";
 import { EnterpriseTable, type Column } from "@/components/boss/EnterpriseTable";
 import { StatusBadge } from "@/components/boss/StatusBadge";
 import { BackendBanner } from "@/components/boss/BackendBanner";
+import { ExportMenu } from "@/components/boss/ExportMenu";
+import { RevenueCharts } from "@/components/boss/RevenueCharts";
 import {
   useInvoices,
   useRevenueKpis,
@@ -14,8 +16,8 @@ import {
 } from "@/lib/data-hooks";
 import { useCan } from "@/lib/session";
 import { useShortcuts } from "@/lib/shortcuts";
-import { exportCsv, fmtMoney } from "@/lib/export";
-import { Download, RefreshCw } from "lucide-react";
+import { fmtMoney } from "@/lib/export";
+import { RefreshCw } from "lucide-react";
 
 export const Route = createFileRoute("/revenue")({
   head: () => ({ meta: [{ title: "Revenue · Boss Panel" }] }),
