@@ -242,6 +242,35 @@ function CommissionWall() {
         onClose={() => setRuleOpen(null)}
         onSubmit={(d) => { toast({ title: "Rule saved", description: d.name, tone: "success" }); setRuleOpen(null); }}
       />
+
+      <BulkEditPanel
+        open={bulkEditOpen}
+        count={selected.size}
+        onClose={() => setBulkEditOpen(false)}
+        onSubmit={(d) => {
+          toast({
+            title: "Bulk edit applied",
+            description: `${selected.size} payouts · ${d.status ?? "no status change"}`,
+            tone: "success",
+          });
+          setBulkEditOpen(false);
+          setSelected(new Set());
+        }}
+      />
+
+      <BulkCreatePanel
+        open={bulkCreateOpen}
+        rules={rules}
+        onClose={() => setBulkCreateOpen(false)}
+        onSubmit={(d) => {
+          toast({
+            title: "Bulk payouts queued",
+            description: `${d.cycle} · ${d.scope} (${d.rule || "auto"})`,
+            tone: "success",
+          });
+          setBulkCreateOpen(false);
+        }}
+      />
     </>
   );
 }
