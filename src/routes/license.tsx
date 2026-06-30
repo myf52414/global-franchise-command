@@ -331,6 +331,29 @@ function Row({ k, v }: { k: string; v: string }) {
   );
 }
 
+const MAX_DOC_BYTES = 10 * 1024 * 1024;
+const ALLOWED_DOC_TYPES = ["application/pdf", "image/png", "image/jpeg"];
+
+type DocKind = "kyc_id" | "kyc_address" | "incorporation" | "tax" | "compliance" | "other";
+const DOC_KIND_LABEL: Record<DocKind, string> = {
+  kyc_id: "Government ID",
+  kyc_address: "Address Proof",
+  incorporation: "Incorporation",
+  tax: "Tax Certificate",
+  compliance: "Compliance Letter",
+  other: "Other",
+};
+
+type UploadedDoc = { id: string; name: string; size: number; type: string; kind: DocKind };
+
+const docMetaSchema = z.object({
+  id: z.string(),
+  name: z.string().min(1).max(160),
+  size: z.number().int().positive().max(MAX_DOC_BYTES),
+  type: z.string().refine((t) => ALLOWED_DOC_TYPES.includes(t), "Only PDF, PNG or JPEG"),
+  kind: z.enum(["kyc_id", "kyc_address", "incorporation", "tax", "compliance", "other"]),
+});
+
 const genSchema = z.object({
   franchise: z.string().trim().min(2, "Franchise is required").max(160),
   plan: z.enum(["starter", "growth", "scale", "enterprise"]),
@@ -338,15 +361,23 @@ const genSchema = z.object({
   domainsMax: z.coerce.number().int().min(1, "Must be ≥ 1").max(10000),
   expiresAt: z.string().min(1, "Expiry date is required"),
   kycVerified: z.coerce.boolean().optional(),
+  kycDocs: z.array(docMetaSchema).min(1, "Upload at least one KYC document"),
+  complianceDocs: z.array(docMetaSchema).min(1, "Upload at least one compliance document"),
 });
 
 function GenerateLicensePanel({
   open, onClose, onSubmit,
-}: { open: boolean; onClose: () => void; onSubmit: (d: z.infer<typeof genSchema>) => void }) {
+}: { open: boolean; onClose: () => void; onSubmit: (d: z.infer<typeof genSchema> & { files: File[] }) => void }) {
   const [errors, setErrors] = useState<Record<string, string>>({});
+  const [kycDocs, setKycDocs] = useState<Array<UploadedDoc & { file: File }>>([]);
+  const [complianceDocs, setComplianceDocs] = useState<Array<UploadedDoc & { file: File }>>([]);
+
+  const reset = () => { setKycDocs([]); setComplianceDocs([]); setErrors({}); };
+
   const submit = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     const fd = new FormData(e.currentTarget);
+    const stripFile = (d: UploadedDoc & { file: File }): UploadedDoc => ({ id: d.id, name: d.name, size: d.size, type: d.type, kind: d.kind });
     const result = genSchema.safeParse({
       franchise: fd.get("franchise"),
       plan: fd.get("plan"),
@@ -354,6 +385,8 @@ function GenerateLicensePanel({
       domainsMax: fd.get("domainsMax"),
       expiresAt: fd.get("expiresAt"),
       kycVerified: fd.get("kycVerified") === "on",
+      kycDocs: kycDocs.map(stripFile),
+      complianceDocs: complianceDocs.map(stripFile),
     });
     if (!result.success) {
       const map: Record<string, string> = {};
@@ -362,17 +395,18 @@ function GenerateLicensePanel({
       return;
     }
     setErrors({});
-    onSubmit(result.data);
+    onSubmit({ ...result.data, files: [...kycDocs.map((d) => d.file), ...complianceDocs.map((d) => d.file)] });
+    reset();
   };
   return (
     <RightPanel
       open={open}
-      onClose={onClose}
+      onClose={() => { onClose(); reset(); }}
       eyebrow="New"
       title="Generate license"
       footer={
         <div className="flex items-center justify-end gap-2">
-          <Btn variant="ghost" onClick={onClose}>Cancel</Btn>
+          <Btn variant="ghost" onClick={() => { onClose(); reset(); }}>Cancel</Btn>
           <Btn variant="primary" type="submit" form="lic-form">Generate</Btn>
         </div>
       }
@@ -387,17 +421,205 @@ function GenerateLicensePanel({
           <LField label="Max Devices" name="devicesMax" type="number" error={errors.devicesMax} required />
           <LField label="Max Domains" name="domainsMax" type="number" error={errors.domainsMax} required />
         </div>
+
+        <DocUploader
+          label="KYC Documents"
+          hint="Government ID, address proof, incorporation. PDF / PNG / JPEG, max 10 MB each."
+          kinds={["kyc_id", "kyc_address", "incorporation", "tax"]}
+          docs={kycDocs}
+          onChange={setKycDocs}
+          error={errors.kycDocs}
+        />
+
+        <DocUploader
+          label="Compliance Documents"
+          hint="Tax registration, regulatory clearance, signed compliance letter."
+          kinds={["compliance", "tax", "other"]}
+          docs={complianceDocs}
+          onChange={setComplianceDocs}
+          error={errors.complianceDocs}
+        />
+
         <label className="flex items-center gap-2 text-[12.5px] text-foreground">
           <input type="checkbox" name="kycVerified" className="h-3.5 w-3.5 accent-[color:var(--color-primary)]" />
           Mark KYC as verified for this franchise
         </label>
         <Card className="bg-surface-2">
           <div className="text-[11.5px] text-muted-foreground">
-            License keys are issued after KYC and compliance gates pass. Each issuance is recorded in the audit log with actor, IP and request metadata.
+            License keys are issued after KYC and compliance gates pass. Uploaded files stream directly to secure storage; each issuance is recorded in the audit log.
           </div>
         </Card>
       </form>
     </RightPanel>
+  );
+}
+
+const renewSchema = z.object({
+  expiresAt: z.string().min(1, "New expiry date is required"),
+  complianceDocs: z.array(docMetaSchema).min(1, "Upload at least one renewal document"),
+  note: z.string().trim().max(280).optional(),
+});
+
+function RenewLicensePanel({
+  license, onClose, canRenew, onSubmit,
+}: {
+  license: License | null;
+  onClose: () => void;
+  canRenew: boolean;
+  onSubmit: (d: z.infer<typeof renewSchema> & { files: File[] }) => void;
+}) {
+  const [errors, setErrors] = useState<Record<string, string>>({});
+  const [docs, setDocs] = useState<Array<UploadedDoc & { file: File }>>([]);
+  const reset = () => { setDocs([]); setErrors({}); };
+
+  const submit = (e: React.FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
+    const fd = new FormData(e.currentTarget);
+    const stripFile = (d: UploadedDoc & { file: File }): UploadedDoc => ({ id: d.id, name: d.name, size: d.size, type: d.type, kind: d.kind });
+    const result = renewSchema.safeParse({
+      expiresAt: fd.get("expiresAt"),
+      note: (fd.get("note") as string) || undefined,
+      complianceDocs: docs.map(stripFile),
+    });
+    if (!result.success) {
+      const map: Record<string, string> = {};
+      for (const issue of result.error.issues) map[issue.path[0] as string] = issue.message;
+      setErrors(map);
+      return;
+    }
+    setErrors({});
+    onSubmit({ ...result.data, files: docs.map((d) => d.file) });
+    reset();
+  };
+
+  return (
+    <RightPanel
+      open={!!license}
+      onClose={() => { onClose(); reset(); }}
+      eyebrow="Renew"
+      title={license ? `Renew · ${license.franchise}` : ""}
+      footer={
+        <div className="flex items-center justify-end gap-2">
+          <Btn variant="ghost" onClick={() => { onClose(); reset(); }}>Cancel</Btn>
+          <Btn variant="primary" type="submit" form="lic-renew-form" disabled={!canRenew}>Submit Renewal</Btn>
+        </div>
+      }
+    >
+      {license && (
+        <form id="lic-renew-form" onSubmit={submit} className="space-y-4" key={license.id}>
+          <Card className="bg-surface-2">
+            <div className="grid grid-cols-2 gap-3 text-[12px] text-foreground">
+              <div>
+                <div className="text-[10.5px] uppercase tracking-wider text-muted-foreground">Current Expiry</div>
+                <div className="font-medium">{license.expiresAt}</div>
+              </div>
+              <div>
+                <div className="text-[10.5px] uppercase tracking-wider text-muted-foreground">License Key</div>
+                <div className="font-mono text-[11.5px]">{license.key}</div>
+              </div>
+            </div>
+          </Card>
+          <LField label="New Expiry Date" name="expiresAt" type="date" error={errors.expiresAt} required />
+          <DocUploader
+            label="Renewal Compliance Docs"
+            hint="Updated tax certificate, regulatory clearance, or compliance attestation."
+            kinds={["compliance", "tax", "other"]}
+            docs={docs}
+            onChange={setDocs}
+            error={errors.complianceDocs}
+          />
+          <LField label="Note for Reviewer" name="note" placeholder="Optional reviewer note…" />
+        </form>
+      )}
+    </RightPanel>
+  );
+}
+
+function DocUploader({
+  label, hint, kinds, docs, onChange, error,
+}: {
+  label: string;
+  hint: string;
+  kinds: DocKind[];
+  docs: Array<UploadedDoc & { file: File }>;
+  onChange: (docs: Array<UploadedDoc & { file: File }>) => void;
+  error?: string;
+}) {
+  const [kind, setKind] = useState<DocKind>(kinds[0]);
+  const [localError, setLocalError] = useState<string | null>(null);
+
+  const onFiles = (files: FileList | null) => {
+    if (!files) return;
+    setLocalError(null);
+    const next = [...docs];
+    for (const f of Array.from(files)) {
+      if (!ALLOWED_DOC_TYPES.includes(f.type)) { setLocalError(`${f.name}: unsupported type`); continue; }
+      if (f.size > MAX_DOC_BYTES) { setLocalError(`${f.name}: exceeds 10 MB`); continue; }
+      next.push({
+        id: `${Date.now()}-${Math.random().toString(36).slice(2, 7)}`,
+        name: f.name, size: f.size, type: f.type, kind, file: f,
+      });
+    }
+    onChange(next);
+  };
+  const remove = (id: string) => onChange(docs.filter((d) => d.id !== id));
+  const message = error || localError;
+
+  return (
+    <div>
+      <div className="mb-1 flex items-center justify-between">
+        <span className="text-[11.5px] font-medium text-foreground">{label} <span className="text-destructive">*</span></span>
+        {message && <span className="text-[11px] text-destructive">{message}</span>}
+      </div>
+      <div className="rounded-md border border-dashed border-border bg-surface-2 p-3">
+        <div className="flex flex-wrap items-center gap-2">
+          <select
+            value={kind}
+            onChange={(e) => setKind(e.target.value as DocKind)}
+            className="h-8 rounded-md border border-border bg-surface px-2 text-[12px] text-foreground"
+          >
+            {kinds.map((k) => <option key={k} value={k}>{DOC_KIND_LABEL[k]}</option>)}
+          </select>
+          <label className="inline-flex h-8 cursor-pointer items-center gap-1.5 rounded-md border border-border bg-surface px-2.5 text-[12.5px] font-medium text-foreground hover:bg-surface">
+            <UploadCloud className="h-3.5 w-3.5" />
+            Upload files
+            <input
+              type="file"
+              className="hidden"
+              accept=".pdf,.png,.jpg,.jpeg"
+              multiple
+              onChange={(e) => { onFiles(e.target.files); e.currentTarget.value = ""; }}
+            />
+          </label>
+          <span className="text-[11px] text-muted-foreground">{hint}</span>
+        </div>
+        {docs.length > 0 && (
+          <ul className="mt-3 divide-y divide-border rounded-md border border-border bg-surface">
+            {docs.map((d) => (
+              <li key={d.id} className="flex items-center gap-2 px-3 py-2 text-[12px]">
+                <FileCheck2 className="h-3.5 w-3.5 text-[color:var(--color-success)]" />
+                <span className="truncate font-medium text-foreground">{d.name}</span>
+                <span className="rounded bg-surface-2 px-1.5 py-0.5 text-[10.5px] text-muted-foreground">{DOC_KIND_LABEL[d.kind]}</span>
+                <span className="ml-auto text-[11px] text-muted-foreground">{(d.size / 1024).toFixed(0)} KB</span>
+                <button
+                  type="button"
+                  onClick={() => remove(d.id)}
+                  className="rounded p-1 text-muted-foreground hover:bg-surface-2 hover:text-foreground"
+                  aria-label="Remove"
+                >
+                  <X className="h-3 w-3" />
+                </button>
+              </li>
+            ))}
+          </ul>
+        )}
+        {docs.length === 0 && (
+          <div className="mt-3 flex items-center gap-2 text-[11.5px] text-muted-foreground">
+            <Paperclip className="h-3 w-3" /> No documents attached yet
+          </div>
+        )}
+      </div>
+    </div>
   );
 }
 
