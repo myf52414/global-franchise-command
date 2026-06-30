@@ -624,10 +624,10 @@ function DocUploader({
 }
 
 function LField({
-  label, name, error, required, type = "text", as, options,
+  label, name, error, required, type = "text", as, options, placeholder,
 }: {
   label: string; name: string; error?: string; required?: boolean;
-  type?: string; as?: "select"; options?: readonly string[];
+  type?: string; as?: "select"; options?: readonly string[]; placeholder?: string;
 }) {
   const cls =
     "w-full rounded-md border bg-surface px-2.5 py-2 text-[12.5px] text-foreground outline-none transition-colors focus:border-primary " +
@@ -646,7 +646,7 @@ function LField({
           {(options ?? []).map((o) => <option key={o} value={o} className="capitalize">{o}</option>)}
         </select>
       ) : (
-        <input name={name} type={type} className={cls} />
+        <input name={name} type={type} placeholder={placeholder} className={cls} />
       )}
     </label>
   );
