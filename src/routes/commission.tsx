@@ -463,3 +463,165 @@ function RField({
     </label>
   );
 }
+
+const bulkEditSchema = z
+  .object({
+    status: z.enum(["", "approved", "paid", "held", "rejected"]).optional(),
+    adjustment: z.string().optional(),
+    adjustmentValue: z.coerce.number().optional(),
+    note: z.string().trim().max(280).optional(),
+  })
+  .refine((d) => d.status || (d.adjustment && !Number.isNaN(d.adjustmentValue ?? NaN)) || (d.note && d.note.length > 0), {
+    message: "Provide at least one change",
+    path: ["status"],
+  });
+
+function BulkEditPanel({
+  open, count, onClose, onSubmit,
+}: {
+  open: boolean;
+  count: number;
+  onClose: () => void;
+  onSubmit: (d: { status?: string; adjustment?: string; adjustmentValue?: number; note?: string }) => void;
+}) {
+  const [errors, setErrors] = useState<Record<string, string>>({});
+  const submit = (e: React.FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
+    const fd = new FormData(e.currentTarget);
+    const result = bulkEditSchema.safeParse({
+      status: (fd.get("status") as string) || "",
+      adjustment: (fd.get("adjustment") as string) || undefined,
+      adjustmentValue: fd.get("adjustmentValue") ? Number(fd.get("adjustmentValue")) : undefined,
+      note: (fd.get("note") as string) || undefined,
+    });
+    if (!result.success) {
+      const map: Record<string, string> = {};
+      for (const i of result.error.issues) map[i.path[0] as string] = i.message;
+      setErrors(map);
+      return;
+    }
+    setErrors({});
+    onSubmit(result.data);
+  };
+  return (
+    <RightPanel
+      open={open}
+      onClose={onClose}
+      eyebrow="Bulk Edit"
+      title={`Edit ${count} payout${count === 1 ? "" : "s"}`}
+      footer={
+        <div className="flex items-center justify-end gap-2">
+          <Btn variant="ghost" onClick={onClose}>Cancel</Btn>
+          <Btn variant="primary" type="submit" form="bulk-edit-form" disabled={count === 0}>Apply to {count}</Btn>
+        </div>
+      }
+    >
+      <form id="bulk-edit-form" onSubmit={submit} className="space-y-4">
+        <Card className="bg-surface-2">
+          <div className="text-[11.5px] text-muted-foreground">
+            Every change is versioned and recorded in the audit timeline with actor, IP and reason. Skipped fields stay untouched.
+          </div>
+        </Card>
+        <RField
+          label="Set Status"
+          name="status"
+          as="select"
+          options={["", "approved", "paid", "held", "rejected"]}
+          error={errors.status}
+        />
+        <div className="grid gap-4 sm:grid-cols-2">
+          <RField
+            label="Adjustment Mode"
+            name="adjustment"
+            as="select"
+            options={["", "add", "subtract", "set"]}
+          />
+          <RField label="Adjustment Value" name="adjustmentValue" type="number" step="0.01" />
+        </div>
+        <RField label="Audit Note" name="note" placeholder="Reason for bulk change…" />
+      </form>
+    </RightPanel>
+  );
+}
+
+const bulkCreateSchema = z.object({
+  cycle: z.string().trim().min(4, "Cycle required").max(20),
+  scope: z.enum(["all", "tier", "country"]),
+  scopeValue: z.string().trim().max(120).optional(),
+  rule: z.string().optional(),
+  dryRun: z.coerce.boolean().optional(),
+});
+
+function BulkCreatePanel({
+  open, rules, onClose, onSubmit,
+}: {
+  open: boolean;
+  rules: CommissionRule[];
+  onClose: () => void;
+  onSubmit: (d: z.infer<typeof bulkCreateSchema>) => void;
+}) {
+  const [errors, setErrors] = useState<Record<string, string>>({});
+  const submit = (e: React.FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
+    const fd = new FormData(e.currentTarget);
+    const result = bulkCreateSchema.safeParse({
+      cycle: fd.get("cycle"),
+      scope: fd.get("scope"),
+      scopeValue: (fd.get("scopeValue") as string) || undefined,
+      rule: (fd.get("rule") as string) || undefined,
+      dryRun: fd.get("dryRun") === "on",
+    });
+    if (!result.success) {
+      const map: Record<string, string> = {};
+      for (const i of result.error.issues) map[i.path[0] as string] = i.message;
+      setErrors(map);
+      return;
+    }
+    setErrors({});
+    onSubmit(result.data);
+  };
+  return (
+    <RightPanel
+      open={open}
+      onClose={onClose}
+      eyebrow="Bulk Create"
+      title="Generate payouts for a cycle"
+      footer={
+        <div className="flex items-center justify-end gap-2">
+          <Btn variant="ghost" onClick={onClose}>Cancel</Btn>
+          <Btn variant="primary" type="submit" form="bulk-create-form">Queue Payouts</Btn>
+        </div>
+      }
+    >
+      <form id="bulk-create-form" onSubmit={submit} className="space-y-4">
+        <div className="grid gap-4 sm:grid-cols-2">
+          <RField label="Cycle" name="cycle" placeholder="2026-Q1" error={errors.cycle} required />
+          <RField label="Scope" name="scope" as="select" options={["all", "tier", "country"]} error={errors.scope} required />
+        </div>
+        <RField label="Scope Value" name="scopeValue" placeholder="e.g. Gold, India" />
+        <label className="block">
+          <div className="mb-1 text-[11.5px] font-medium text-foreground">Override Rule</div>
+          <select
+            name="rule"
+            className="w-full rounded-md border border-border bg-surface px-2.5 py-2 text-[12.5px] text-foreground"
+            defaultValue=""
+          >
+            <option value="">Auto-select per franchise</option>
+            {rules.filter((r) => r.active).map((r) => (
+              <option key={r.id} value={r.id}>{r.name} · {r.ratePct}%</option>
+            ))}
+          </select>
+        </label>
+        <label className="flex items-center gap-2 text-[12.5px] text-foreground">
+          <input type="checkbox" name="dryRun" defaultChecked className="h-3.5 w-3.5 accent-[color:var(--color-primary)]" />
+          Dry run — preview impact before writing payouts
+        </label>
+        <Card className="bg-surface-2">
+          <div className="text-[11.5px] text-muted-foreground">
+            Generated payouts enter the <span className="font-mono">draft</span> state and require <span className="font-mono">commission.approve</span> before payment.
+          </div>
+        </Card>
+      </form>
+    </RightPanel>
+  );
+}
