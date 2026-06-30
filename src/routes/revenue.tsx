@@ -125,9 +125,12 @@ function RevenueWall() {
           <Btn variant="ghost" onClick={() => { refetch(); kpisQ.refetch(); }}>
             <RefreshCw className={`h-3.5 w-3.5 ${isFetching ? "animate-spin" : ""}`} /> Refresh
           </Btn>
-          <Btn variant="outline" onClick={() => exportCsv("revenue-invoices.csv", filtered)}>
-            <Download className="h-3.5 w-3.5" /> Export
-          </Btn>
+          <ExportMenu<Invoice>
+            filename="revenue-invoices"
+            rows={filtered}
+            sheetName="Invoices"
+            label="Export Ledger"
+          />
         </>}
       />
       <BackendBanner />
@@ -144,17 +147,13 @@ function RevenueWall() {
           <Stat label="Tax Collected" value={v(kpi?.tax)} />
         </div>
 
-        <Section title="Revenue Over Time">
-          <Card>
-            <div className="grid h-48 place-items-center rounded-md border border-dashed border-border text-[12px] text-muted-foreground">
-              {kpisQ.isLoading
-                ? "Loading ledger…"
-                : kpisQ.error
-                  ? "Failed to load revenue trend"
-                  : "Chart renders from live ledger"}
-            </div>
-          </Card>
-        </Section>
+        <RevenueCharts
+          invoices={filtered}
+          loading={isLoading || kpisQ.isLoading}
+          error={!!(error || kpisQ.error)}
+          range={range}
+          onRangeChange={setRange}
+        />
 
         <Section title="Invoices">
           <div className="space-y-3">
@@ -181,9 +180,12 @@ function RevenueWall() {
               searchPlaceholder="Search invoice # or franchise…"
               selectedCount={selected.size}
               bulkActions={<>
-                <Btn variant="ghost" onClick={() => exportCsv("invoices-selected.csv", rows.filter((r) => selected.has(r.id)))}>
-                  <Download className="h-3.5 w-3.5" /> Export
-                </Btn>
+                <ExportMenu<Invoice>
+                  filename="invoices-selected"
+                  rows={rows.filter((r) => selected.has(r.id))}
+                  sheetName="Selected"
+                  label="Export Selected"
+                />
               </>}
               right={<>
                 <select
@@ -202,9 +204,11 @@ function RevenueWall() {
                   <option value="">All countries</option>
                   {countries.map((c) => <option key={c} value={c}>{c}</option>)}
                 </select>
-                <Btn variant="ghost" onClick={() => exportCsv("invoices.csv", filtered)}>
-                  <Download className="h-3.5 w-3.5" /> Export
-                </Btn>
+                <ExportMenu<Invoice>
+                  filename="invoices"
+                  rows={filtered}
+                  sheetName="Invoices"
+                />
               </>}
             />
 
