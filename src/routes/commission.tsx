@@ -50,6 +50,8 @@ function CommissionWall() {
   const [sortDir, setSortDir] = useState<"asc" | "desc">("desc");
   const [openId, setOpenId] = useState<string | null>(null);
   const [ruleOpen, setRuleOpen] = useState<CommissionRule | "new" | null>(null);
+  const [bulkEditOpen, setBulkEditOpen] = useState(false);
+  const [bulkCreateOpen, setBulkCreateOpen] = useState(false);
 
   useShortcuts([
     { combo: "shift+n", description: "New rule", handler: () => canApprove && setRuleOpen("new") },
