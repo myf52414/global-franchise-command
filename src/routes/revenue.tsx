@@ -45,6 +45,7 @@ function RevenueWall() {
   const [pageSize, setPageSize] = useState(25);
   const [sortBy, setSortBy] = useState<string>("issuedAt");
   const [sortDir, setSortDir] = useState<"asc" | "desc">("desc");
+  const [range, setRange] = useState<"7d" | "30d" | "90d" | "ytd">("30d");
 
   useShortcuts([
     { combo: "/", description: "Focus search", handler: () => (document.getElementById("rev-search") as HTMLInputElement)?.focus() },
