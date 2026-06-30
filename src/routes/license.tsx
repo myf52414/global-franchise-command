@@ -218,14 +218,33 @@ function LicenseWall() {
         onClose={() => setOpenId(null)}
         canRevoke={canRevoke}
         onAction={(label) => { toast({ title: label, tone: "success" }); setOpenId(null); }}
+        onRenew={() => { if (active) { setRenewTarget(active); setOpenId(null); } }}
       />
 
       <GenerateLicensePanel
         open={newOpen}
         onClose={() => setNewOpen(false)}
         onSubmit={(d) => {
-          toast({ title: "License generated", description: `${d.franchise} · ${d.plan}`, tone: "success" });
+          toast({
+            title: "License generated",
+            description: `${d.franchise} · ${d.plan} · ${d.kycDocs.length + d.complianceDocs.length} doc(s)`,
+            tone: "success",
+          });
           setNewOpen(false);
+        }}
+      />
+
+      <RenewLicensePanel
+        license={renewTarget}
+        onClose={() => setRenewTarget(null)}
+        canRenew={canGenerate}
+        onSubmit={(d) => {
+          toast({
+            title: "Renewal submitted",
+            description: `${renewTarget?.franchise ?? ""} · until ${d.expiresAt} · ${d.complianceDocs.length} doc(s)`,
+            tone: "success",
+          });
+          setRenewTarget(null);
         }}
       />
     </>
