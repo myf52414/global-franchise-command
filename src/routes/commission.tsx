@@ -178,9 +178,15 @@ function CommissionWall() {
                 <Btn variant="ghost" disabled={!canApprove} onClick={() => bulkAction("Marked paid")}>Mark Paid</Btn>
                 <Btn variant="ghost" disabled={!canApprove} onClick={() => bulkAction("Held for review")}><ShieldOff className="h-3.5 w-3.5" /> Hold</Btn>
                 <Btn variant="ghost" disabled={!canApprove} onClick={() => bulkAction("Rejected")}><XCircle className="h-3.5 w-3.5" /> Reject</Btn>
-                <Btn variant="ghost" onClick={() => exportCsv("commissions-selected.csv", rows.filter((r) => selected.has(r.id)))}>
-                  <Download className="h-3.5 w-3.5" /> Export
+                <Btn variant="ghost" disabled={!canApprove} onClick={() => setBulkEditOpen(true)}>
+                  <Layers className="h-3.5 w-3.5" /> Bulk Edit
                 </Btn>
+                <ExportMenu<Commission>
+                  filename="commissions-selected"
+                  rows={rows.filter((r) => selected.has(r.id))}
+                  sheetName="Selected"
+                  label="Export Selected"
+                />
               </>}
               right={<>
                 <select
@@ -191,9 +197,14 @@ function CommissionWall() {
                   <option value="">All cycles</option>
                   {cycles.map((c) => <option key={c} value={c}>{c}</option>)}
                 </select>
-                <Btn variant="ghost" onClick={() => exportCsv("commissions.csv", filtered)}>
-                  <Download className="h-3.5 w-3.5" /> Export
+                <Btn variant="outline" disabled={!canApprove} onClick={() => setBulkCreateOpen(true)}>
+                  <FilePlus2 className="h-3.5 w-3.5" /> Bulk Create
                 </Btn>
+                <ExportMenu<Commission>
+                  filename="commissions"
+                  rows={filtered}
+                  sheetName="Payouts"
+                />
               </>}
             />
 
