@@ -51,6 +51,7 @@ function LicenseWall() {
   const [sortDir, setSortDir] = useState<"asc" | "desc">("desc");
   const [openId, setOpenId] = useState<string | null>(null);
   const [newOpen, setNewOpen] = useState(false);
+  const [renewTarget, setRenewTarget] = useState<License | null>(null);
 
   useShortcuts([
     { combo: "shift+n", description: "Generate license", handler: () => canGenerate && setNewOpen(true) },
