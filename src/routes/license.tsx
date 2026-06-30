@@ -232,8 +232,8 @@ function LicenseWall() {
 }
 
 function LicenseDetailPanel({
-  license, onClose, canRevoke, onAction,
-}: { license: License | null; onClose: () => void; canRevoke: boolean; onAction: (label: string) => void }) {
+  license, onClose, canRevoke, onAction, onRenew,
+}: { license: License | null; onClose: () => void; canRevoke: boolean; onAction: (label: string) => void; onRenew: () => void }) {
   const { data: audit = [], isLoading } = useAuditTrail("license", license?.id);
   return (
     <RightPanel
@@ -243,7 +243,7 @@ function LicenseDetailPanel({
       title={license ? `${license.franchise} · ${license.key}` : ""}
       footer={
         <div className="flex items-center justify-end gap-2">
-          <Btn variant="ghost" onClick={() => onAction("Renewal scheduled")}>Renew</Btn>
+          <Btn variant="ghost" onClick={onRenew}>Renew</Btn>
           <Btn variant="outline" disabled={!canRevoke} onClick={() => onAction("License suspended")}>Suspend</Btn>
           <Btn variant="destructive" disabled={!canRevoke} onClick={() => onAction("License revoked")}>Revoke</Btn>
         </div>
