@@ -19,8 +19,10 @@ import {
 import { useCan } from "@/lib/session";
 import { useToast } from "@/lib/toast";
 import { useShortcuts } from "@/lib/shortcuts";
-import { exportCsv, fmtMoney, fmtPct } from "@/lib/export";
-import { CheckCircle2, Download, Pencil, Plus, RefreshCw, ShieldOff, XCircle } from "lucide-react";
+import { ExportMenu } from "@/components/boss/ExportMenu";
+import { exportCsv as _csv, fmtMoney, fmtPct } from "@/lib/export";
+import { CheckCircle2, Pencil, Plus, RefreshCw, ShieldOff, XCircle, Layers, FilePlus2 } from "lucide-react";
+void _csv;
 
 export const Route = createFileRoute("/commission")({
   head: () => ({ meta: [{ title: "Commission · Boss Panel" }] }),
