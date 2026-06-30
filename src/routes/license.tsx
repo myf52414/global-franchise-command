@@ -168,9 +168,12 @@ function LicenseWall() {
                 <Btn variant="ghost" disabled={!canGenerate}>Renew</Btn>
                 <Btn variant="ghost" disabled={!canRevoke}>Suspend</Btn>
                 <Btn variant="ghost" disabled={!canRevoke}>Revoke</Btn>
-                <Btn variant="ghost" onClick={() => exportCsv("licenses-selected.csv", rows.filter((r) => selected.has(r.id)))}>
-                  <Download className="h-3.5 w-3.5" /> Export
-                </Btn>
+                <ExportMenu<License>
+                  filename="licenses-selected"
+                  rows={rows.filter((r) => selected.has(r.id))}
+                  sheetName="Selected"
+                  label="Export Selected"
+                />
               </>}
               right={<>
                 <select
@@ -181,9 +184,11 @@ function LicenseWall() {
                   <option value="">All plans</option>
                   {PLANS.map((p) => <option key={p} value={p} className="capitalize">{p}</option>)}
                 </select>
-                <Btn variant="ghost" onClick={() => exportCsv("licenses.csv", filtered)}>
-                  <Download className="h-3.5 w-3.5" /> Export
-                </Btn>
+                <ExportMenu<License>
+                  filename="licenses"
+                  rows={filtered}
+                  sheetName="Licenses"
+                />
               </>}
             />
 
