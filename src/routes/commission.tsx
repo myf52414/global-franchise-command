@@ -22,6 +22,8 @@ import { useShortcuts } from "@/lib/shortcuts";
 import { ExportMenu } from "@/components/boss/ExportMenu";
 import { fmtMoney, fmtPct } from "@/lib/export";
 import { CheckCircle2, Pencil, Plus, RefreshCw, ShieldOff, XCircle, Layers, FilePlus2 } from "lucide-react";
+import { useApprovals, useMergedAudit } from "@/lib/approvals";
+import { ApprovalQueueButton, ApprovalQueuePanel } from "@/components/boss/ApprovalQueuePanel";
 
 export const Route = createFileRoute("/commission")({
   head: () => ({ meta: [{ title: "Commission · Boss Panel" }] }),
@@ -52,6 +54,8 @@ function CommissionWall() {
   const [ruleOpen, setRuleOpen] = useState<CommissionRule | "new" | null>(null);
   const [bulkEditOpen, setBulkEditOpen] = useState(false);
   const [bulkCreateOpen, setBulkCreateOpen] = useState(false);
+  const [queueOpen, setQueueOpen] = useState(false);
+  const { submit: submitApproval } = useApprovals();
 
   useShortcuts([
     { combo: "shift+n", description: "New rule", handler: () => canApprove && setRuleOpen("new") },
@@ -124,6 +128,7 @@ function CommissionWall() {
         description="Commission slabs, royalty rules, payout cycles and statements with full audit trail and RBAC."
         actions={<>
           <Btn variant="ghost" onClick={() => refetch()}><RefreshCw className={`h-3.5 w-3.5 ${isFetching ? "animate-spin" : ""}`} /> Refresh</Btn>
+          <ApprovalQueueButton scope="commission" canApprove={canApprove} onOpen={() => setQueueOpen(true)} />
           <Btn variant="outline" disabled={!canApprove} onClick={() => setRuleOpen("new")}>
             <Plus className="h-3.5 w-3.5" /> New Rule
           </Btn>
@@ -248,10 +253,23 @@ function CommissionWall() {
         count={selected.size}
         onClose={() => setBulkEditOpen(false)}
         onSubmit={(d) => {
+          const ids = Array.from(selected);
+          const parts: string[] = [];
+          if (d.status) parts.push(`status → ${d.status}`);
+          if (d.adjustment && typeof d.adjustmentValue === "number") parts.push(`${d.adjustment} ${d.adjustmentValue}`);
+          if (d.note) parts.push(`note: ${d.note}`);
+          submitApproval({
+            kind: "commission.bulk_edit",
+            scope: "commission",
+            targetIds: ids,
+            title: `Bulk edit · ${ids.length} payout${ids.length === 1 ? "" : "s"}`,
+            summary: parts.join(" · ") || "No changes specified",
+            payload: { ...d, ids },
+          });
           toast({
-            title: "Bulk edit applied",
-            description: `${selected.size} payouts · ${d.status ?? "no status change"}`,
-            tone: "success",
+            title: "Bulk edit queued for approval",
+            description: `${ids.length} payout(s) · awaiting commission.approve`,
+            tone: "info",
           });
           setBulkEditOpen(false);
           setSelected(new Set());
@@ -270,6 +288,13 @@ function CommissionWall() {
           });
           setBulkCreateOpen(false);
         }}
+      />
+
+      <ApprovalQueuePanel
+        open={queueOpen}
+        onClose={() => setQueueOpen(false)}
+        scope="commission"
+        canApprove={canApprove}
       />
     </>
   );
@@ -307,7 +332,8 @@ function RulesTable({
 function CommissionDetailPanel({
   commission, onClose, canApprove, onAction,
 }: { commission: Commission | null; onClose: () => void; canApprove: boolean; onAction: (label: string) => void }) {
-  const { data: audit = [], isLoading } = useAuditTrail("commission", commission?.id);
+  const { data: server = [], isLoading } = useAuditTrail("commission", commission?.id);
+  const audit = useMergedAudit(server, "commission", commission?.id);
   return (
     <RightPanel
       open={!!commission}
