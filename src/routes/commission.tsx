@@ -332,7 +332,8 @@ function RulesTable({
 function CommissionDetailPanel({
   commission, onClose, canApprove, onAction,
 }: { commission: Commission | null; onClose: () => void; canApprove: boolean; onAction: (label: string) => void }) {
-  const { data: audit = [], isLoading } = useAuditTrail("commission", commission?.id);
+  const { data: server = [], isLoading } = useAuditTrail("commission", commission?.id);
+  const audit = useMergedAudit(server, "commission", commission?.id);
   return (
     <RightPanel
       open={!!commission}
