@@ -14,6 +14,7 @@ import { reportLovableError } from "../lib/lovable-error-reporting";
 import { TopBar } from "../components/boss/TopBar";
 import { SessionProvider } from "../lib/session";
 import { ToastProvider } from "../lib/toast";
+import { ApprovalsProvider } from "../lib/approvals";
 
 function NotFoundComponent() {
   return (
@@ -123,7 +124,9 @@ function RootComponent() {
     <QueryClientProvider client={queryClient}>
       <SessionProvider>
         <ToastProvider>
-          <BossShell />
+          <ApprovalsProvider>
+            <BossShell />
+          </ApprovalsProvider>
         </ToastProvider>
       </SessionProvider>
     </QueryClientProvider>
