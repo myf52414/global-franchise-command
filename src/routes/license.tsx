@@ -271,9 +271,6 @@ function LicenseWall() {
     </>
   );
 }
-    </>
-  );
-}
 
 function LicenseDetailPanel({
   license, onClose, canRevoke, onAction, onRenew,
