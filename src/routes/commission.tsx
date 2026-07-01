@@ -253,10 +253,23 @@ function CommissionWall() {
         count={selected.size}
         onClose={() => setBulkEditOpen(false)}
         onSubmit={(d) => {
+          const ids = Array.from(selected);
+          const parts: string[] = [];
+          if (d.status) parts.push(`status → ${d.status}`);
+          if (d.adjustment && typeof d.adjustmentValue === "number") parts.push(`${d.adjustment} ${d.adjustmentValue}`);
+          if (d.note) parts.push(`note: ${d.note}`);
+          submitApproval({
+            kind: "commission.bulk_edit",
+            scope: "commission",
+            targetIds: ids,
+            title: `Bulk edit · ${ids.length} payout${ids.length === 1 ? "" : "s"}`,
+            summary: parts.join(" · ") || "No changes specified",
+            payload: { ...d, ids },
+          });
           toast({
-            title: "Bulk edit applied",
-            description: `${selected.size} payouts · ${d.status ?? "no status change"}`,
-            tone: "success",
+            title: "Bulk edit queued for approval",
+            description: `${ids.length} payout(s) · awaiting commission.approve`,
+            tone: "info",
           });
           setBulkEditOpen(false);
           setSelected(new Set());
@@ -275,6 +288,13 @@ function CommissionWall() {
           });
           setBulkCreateOpen(false);
         }}
+      />
+
+      <ApprovalQueuePanel
+        open={queueOpen}
+        onClose={() => setQueueOpen(false)}
+        scope="commission"
+        canApprove={canApprove}
       />
     </>
   );
