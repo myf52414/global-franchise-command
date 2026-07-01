@@ -275,7 +275,8 @@ function LicenseWall() {
 function LicenseDetailPanel({
   license, onClose, canRevoke, onAction, onRenew,
 }: { license: License | null; onClose: () => void; canRevoke: boolean; onAction: (label: string) => void; onRenew: () => void }) {
-  const { data: audit = [], isLoading } = useAuditTrail("license", license?.id);
+  const { data: server = [], isLoading } = useAuditTrail("license", license?.id);
+  const audit = useMergedAudit(server, "license", license?.id);
   return (
     <RightPanel
       open={!!license}
