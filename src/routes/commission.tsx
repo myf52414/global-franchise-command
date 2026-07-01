@@ -22,6 +22,8 @@ import { useShortcuts } from "@/lib/shortcuts";
 import { ExportMenu } from "@/components/boss/ExportMenu";
 import { fmtMoney, fmtPct } from "@/lib/export";
 import { CheckCircle2, Pencil, Plus, RefreshCw, ShieldOff, XCircle, Layers, FilePlus2 } from "lucide-react";
+import { useApprovals, useMergedAudit } from "@/lib/approvals";
+import { ApprovalQueueButton, ApprovalQueuePanel } from "@/components/boss/ApprovalQueuePanel";
 
 export const Route = createFileRoute("/commission")({
   head: () => ({ meta: [{ title: "Commission · Boss Panel" }] }),
@@ -52,6 +54,8 @@ function CommissionWall() {
   const [ruleOpen, setRuleOpen] = useState<CommissionRule | "new" | null>(null);
   const [bulkEditOpen, setBulkEditOpen] = useState(false);
   const [bulkCreateOpen, setBulkCreateOpen] = useState(false);
+  const [queueOpen, setQueueOpen] = useState(false);
+  const { submit: submitApproval } = useApprovals();
 
   useShortcuts([
     { combo: "shift+n", description: "New rule", handler: () => canApprove && setRuleOpen("new") },
@@ -124,6 +128,7 @@ function CommissionWall() {
         description="Commission slabs, royalty rules, payout cycles and statements with full audit trail and RBAC."
         actions={<>
           <Btn variant="ghost" onClick={() => refetch()}><RefreshCw className={`h-3.5 w-3.5 ${isFetching ? "animate-spin" : ""}`} /> Refresh</Btn>
+          <ApprovalQueueButton scope="commission" canApprove={canApprove} onOpen={() => setQueueOpen(true)} />
           <Btn variant="outline" disabled={!canApprove} onClick={() => setRuleOpen("new")}>
             <Plus className="h-3.5 w-3.5" /> New Rule
           </Btn>
