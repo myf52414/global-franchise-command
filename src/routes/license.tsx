@@ -21,6 +21,8 @@ import { useShortcuts } from "@/lib/shortcuts";
 import { ExportMenu } from "@/components/boss/ExportMenu";
 import { fmtNumber } from "@/lib/export";
 import { FileCheck2, KeyRound, Paperclip, Plus, RefreshCw, ShieldAlert, ShieldCheck, UploadCloud, X } from "lucide-react";
+import { useApprovals, useMergedAudit } from "@/lib/approvals";
+import { ApprovalQueueButton, ApprovalQueuePanel } from "@/components/boss/ApprovalQueuePanel";
 
 export const Route = createFileRoute("/license")({
   head: () => ({ meta: [{ title: "License · Boss Panel" }] }),
@@ -52,6 +54,8 @@ function LicenseWall() {
   const [openId, setOpenId] = useState<string | null>(null);
   const [newOpen, setNewOpen] = useState(false);
   const [renewTarget, setRenewTarget] = useState<License | null>(null);
+  const [queueOpen, setQueueOpen] = useState(false);
+  const { submit: submitApproval } = useApprovals();
 
   useShortcuts([
     { combo: "shift+n", description: "Generate license", handler: () => canGenerate && setNewOpen(true) },
@@ -124,6 +128,7 @@ function LicenseWall() {
         description="Generate, activate, suspend, renew and audit franchise software licenses with KYC and compliance gates."
         actions={<>
           <Btn variant="ghost" onClick={() => refetch()}><RefreshCw className={`h-3.5 w-3.5 ${isFetching ? "animate-spin" : ""}`} /> Refresh</Btn>
+          <ApprovalQueueButton scope="license" canApprove={canGenerate} onOpen={() => setQueueOpen(true)} />
           <Btn variant="outline" disabled={!canGenerate}>Bulk Generate</Btn>
           <Btn variant="primary" disabled={!canGenerate} onClick={() => setNewOpen(true)}>
             <Plus className="h-3.5 w-3.5" /> Generate License
@@ -239,14 +244,33 @@ function LicenseWall() {
         onClose={() => setRenewTarget(null)}
         canRenew={canGenerate}
         onSubmit={(d) => {
+          if (!renewTarget) return;
+          submitApproval({
+            kind: "license.renew",
+            scope: "license",
+            targetIds: [renewTarget.id],
+            title: `${renewTarget.franchise} · ${renewTarget.key}`,
+            summary: `Renew until ${d.expiresAt} · ${d.complianceDocs.length} doc(s)${d.note ? ` · ${d.note}` : ""}`,
+            payload: { expiresAt: d.expiresAt, note: d.note, docs: d.complianceDocs },
+          });
           toast({
-            title: "Renewal submitted",
-            description: `${renewTarget?.franchise ?? ""} · until ${d.expiresAt} · ${d.complianceDocs.length} doc(s)`,
-            tone: "success",
+            title: "Renewal queued for approval",
+            description: `${renewTarget.franchise} · awaiting license.generate approver`,
+            tone: "info",
           });
           setRenewTarget(null);
         }}
       />
+
+      <ApprovalQueuePanel
+        open={queueOpen}
+        onClose={() => setQueueOpen(false)}
+        scope="license"
+        canApprove={canGenerate}
+      />
+    </>
+  );
+}
     </>
   );
 }
