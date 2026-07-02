@@ -40,6 +40,8 @@ function CommissionWall() {
   const { data: rules = [], isLoading: rulesLoading } = useCommissionRules();
   const { data: rows = [], isLoading, error, refetch, isFetching } = useCommissions();
   const canApprove = useCan("commission.approve");
+  const canRead = useCan("commission.read");
+  const canViewApprovals = canApprove || canRead;
   const { toast } = useToast();
 
   const [tab, setTab] = useState<CommissionStatus | "all">("all");
@@ -128,7 +130,7 @@ function CommissionWall() {
         description="Commission slabs, royalty rules, payout cycles and statements with full audit trail and RBAC."
         actions={<>
           <Btn variant="ghost" onClick={() => refetch()}><RefreshCw className={`h-3.5 w-3.5 ${isFetching ? "animate-spin" : ""}`} /> Refresh</Btn>
-          <ApprovalQueueButton scope="commission" canApprove={canApprove} onOpen={() => setQueueOpen(true)} />
+          <ApprovalQueueButton scope="commission" canView={canViewApprovals} canApprove={canApprove} onOpen={() => setQueueOpen(true)} />
           <Btn variant="outline" disabled={!canApprove} onClick={() => setRuleOpen("new")}>
             <Plus className="h-3.5 w-3.5" /> New Rule
           </Btn>
@@ -294,7 +296,14 @@ function CommissionWall() {
         open={queueOpen}
         onClose={() => setQueueOpen(false)}
         scope="commission"
+        canView={canViewApprovals}
         canApprove={canApprove}
+        onOpenTarget={(id) => {
+          if (rows.some((r) => r.id === id)) {
+            setQueueOpen(false);
+            setOpenId(id);
+          }
+        }}
       />
     </>
   );
