@@ -41,6 +41,8 @@ function LicenseWall() {
   const { data: rows = [], isLoading, error, refetch, isFetching } = useLicenses();
   const canGenerate = useCan("license.generate");
   const canRevoke = useCan("license.revoke");
+  const canReadFranchise = useCan("franchise.read");
+  const canViewApprovals = canGenerate || canRevoke || canReadFranchise;
   const { toast } = useToast();
 
   const [tab, setTab] = useState<LicenseStatus | "all">("all");
@@ -128,7 +130,7 @@ function LicenseWall() {
         description="Generate, activate, suspend, renew and audit franchise software licenses with KYC and compliance gates."
         actions={<>
           <Btn variant="ghost" onClick={() => refetch()}><RefreshCw className={`h-3.5 w-3.5 ${isFetching ? "animate-spin" : ""}`} /> Refresh</Btn>
-          <ApprovalQueueButton scope="license" canApprove={canGenerate} onOpen={() => setQueueOpen(true)} />
+          <ApprovalQueueButton scope="license" canView={canViewApprovals} canApprove={canGenerate} onOpen={() => setQueueOpen(true)} />
           <Btn variant="outline" disabled={!canGenerate}>Bulk Generate</Btn>
           <Btn variant="primary" disabled={!canGenerate} onClick={() => setNewOpen(true)}>
             <Plus className="h-3.5 w-3.5" /> Generate License
@@ -266,7 +268,14 @@ function LicenseWall() {
         open={queueOpen}
         onClose={() => setQueueOpen(false)}
         scope="license"
+        canView={canViewApprovals}
         canApprove={canGenerate}
+        onOpenTarget={(id) => {
+          if (rows.some((r) => r.id === id)) {
+            setQueueOpen(false);
+            setOpenId(id);
+          }
+        }}
       />
     </>
   );
