@@ -61,11 +61,11 @@ export function TopBar() {
 
   const notifications = useMemo(
     () =>
-      pending.map((p) => ({
+      pending.map((p: ApprovalRequest) => ({
         id: p.id,
-        title: `${p.kind === "license.renewal" ? "License renewal" : "Commission bulk edit"} awaiting approval`,
+        title: `${p.kind === "license.renew" ? "License renewal" : "Commission bulk edit"} awaiting approval`,
         description: `Requested by ${p.requestedBy}`,
-        to: p.kind === "license.renewal" ? "/license" : "/commission",
+        to: p.kind === "license.renew" ? "/license" : "/commission",
       })),
     [pending],
   );
