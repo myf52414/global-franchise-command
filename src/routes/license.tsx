@@ -177,6 +177,7 @@ function LicenseWall() {
                 <Btn variant="ghost" disabled={!canRevoke}>Suspend</Btn>
                 <Btn variant="ghost" disabled={!canRevoke}>Revoke</Btn>
                 <ExportMenu<License>
+                  permission="license.generate"
                   filename="licenses-selected"
                   rows={rows.filter((r) => selected.has(r.id))}
                   sheetName="Selected"
@@ -193,6 +194,7 @@ function LicenseWall() {
                   {PLANS.map((p) => <option key={p} value={p} className="capitalize">{p}</option>)}
                 </select>
                 <ExportMenu<License>
+                  permission="license.generate"
                   filename="licenses"
                   rows={filtered}
                   sheetName="Licenses"

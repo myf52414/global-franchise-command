@@ -191,6 +191,7 @@ function CommissionWall() {
                   <Layers className="h-3.5 w-3.5" /> Bulk Edit
                 </Btn>
                 <ExportMenu<Commission>
+                  permission="commission.read"
                   filename="commissions-selected"
                   rows={rows.filter((r) => selected.has(r.id))}
                   sheetName="Selected"
@@ -210,6 +211,7 @@ function CommissionWall() {
                   <FilePlus2 className="h-3.5 w-3.5" /> Bulk Create
                 </Btn>
                 <ExportMenu<Commission>
+                  permission="commission.read"
                   filename="commissions"
                   rows={filtered}
                   sheetName="Payouts"
