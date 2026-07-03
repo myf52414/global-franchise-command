@@ -28,7 +28,7 @@ export function TopBar() {
   const menuRef = useRef<HTMLDivElement>(null);
   const navigate = useNavigate();
   const { toast } = useToast();
-  const { pending } = useApprovals();
+  const pending = usePendingApprovals();
   const session = useSession();
   const routerState = useRouterState();
   const currentPath = routerState.location.pathname;
