@@ -127,6 +127,7 @@ function RevenueWall() {
             <RefreshCw className={`h-3.5 w-3.5 ${isFetching ? "animate-spin" : ""}`} /> Refresh
           </Btn>
           <ExportMenu<Invoice>
+            permission="revenue.read"
             filename="revenue-invoices"
             rows={filtered}
             sheetName="Invoices"
@@ -182,6 +183,7 @@ function RevenueWall() {
               selectedCount={selected.size}
               bulkActions={<>
                 <ExportMenu<Invoice>
+                  permission="revenue.read"
                   filename="invoices-selected"
                   rows={rows.filter((r) => selected.has(r.id))}
                   sheetName="Selected"
@@ -206,6 +208,7 @@ function RevenueWall() {
                   {countries.map((c) => <option key={c} value={c}>{c}</option>)}
                 </select>
                 <ExportMenu<Invoice>
+                  permission="revenue.read"
                   filename="invoices"
                   rows={filtered}
                   sheetName="Invoices"
