@@ -43,6 +43,14 @@ export function ExportMenu<T extends Record<string, unknown>>({
 
   const run = async (fmt: ExportFormat) => {
     setOpen(false);
+    if (gated) {
+      toast({
+        title: "Export blocked",
+        description: `You need the "${permission}" permission to export this data.`,
+        tone: "destructive",
+      });
+      return;
+    }
     setBusy(fmt);
     try {
       const data = typeof rows === "function" ? await rows() : rows;
@@ -67,8 +75,13 @@ export function ExportMenu<T extends Record<string, unknown>>({
 
   return (
     <div ref={ref} className="relative">
-      <Btn variant="ghost" disabled={disabled || !!busy} onClick={() => setOpen((o) => !o)}>
-        {busy ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Download className="h-3.5 w-3.5" />}
+      <Btn
+        variant="ghost"
+        disabled={disabled || !!busy || gated}
+        onClick={() => setOpen((o) => !o)}
+        title={gated ? `Requires ${permission}` : undefined}
+      >
+        {gated ? <Lock className="h-3.5 w-3.5" /> : busy ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Download className="h-3.5 w-3.5" />}
         {busy ? `Exporting ${busy.toUpperCase()}…` : label}
         <ChevronDown className="h-3 w-3" />
       </Btn>
