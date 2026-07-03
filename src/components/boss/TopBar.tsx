@@ -1,7 +1,7 @@
 import { Link, useNavigate, useRouterState } from "@tanstack/react-router";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { WALLS } from "@/lib/walls";
-import { useApprovals } from "@/lib/approvals";
+import { usePendingApprovals, type ApprovalRequest } from "@/lib/approvals";
 import { useToast } from "@/lib/toast";
 import { useSession } from "@/lib/session";
 import {
