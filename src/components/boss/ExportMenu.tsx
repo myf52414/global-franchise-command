@@ -1,8 +1,10 @@
 import { useEffect, useRef, useState } from "react";
-import { ChevronDown, Download, FileSpreadsheet, FileText, Loader2 } from "lucide-react";
+import { ChevronDown, Download, FileSpreadsheet, FileText, Loader2, Lock } from "lucide-react";
 import { Btn } from "./Wall";
 import { exportCsv, exportXlsx, type ExportColumn } from "@/lib/export";
 import { useToast } from "@/lib/toast";
+import { useCan } from "@/lib/session";
+import type { Permission } from "@/lib/franchise-domain";
 
 export type ExportFormat = "csv" | "xlsx";
 
@@ -13,6 +15,7 @@ export function ExportMenu<T extends Record<string, unknown>>({
   label = "Export",
   disabled,
   sheetName,
+  permission,
 }: {
   filename: string;
   rows: T[] | (() => Promise<T[]> | T[]);
@@ -20,11 +23,14 @@ export function ExportMenu<T extends Record<string, unknown>>({
   label?: string;
   disabled?: boolean;
   sheetName?: string;
+  permission?: Permission;
 }) {
   const [open, setOpen] = useState(false);
   const [busy, setBusy] = useState<ExportFormat | null>(null);
   const ref = useRef<HTMLDivElement>(null);
   const { toast } = useToast();
+  const allowed = useCan(permission ?? "franchise.read");
+  const gated = permission ? !allowed : false;
 
   useEffect(() => {
     if (!open) return;
