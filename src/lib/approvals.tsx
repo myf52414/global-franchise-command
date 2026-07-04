@@ -9,8 +9,9 @@ import {
 import type { AuditEntry } from "./data-hooks";
 import { useSession } from "./session";
 
-// In-memory approval workflow. Wire submit/approve/reject to
-// createServerFn once the backend is enabled — the shape stays identical.
+// In-memory approval + document workflow. Wire submit/approve/reject and
+// registerDocuments to createServerFn once the backend is enabled — the
+// shape stays identical.
 
 export type ApprovalKind = "license.renew" | "commission.bulk_edit";
 
@@ -34,12 +35,47 @@ export type ApprovalRequest = {
 
 export type LocalAuditEntry = AuditEntry & { scope: string; targetId?: string };
 
+export type StoredDocument = {
+  id: string;
+  name: string;
+  size: number;
+  type: string;
+  kind: string;
+  category: "kyc" | "compliance";
+  scope: string;
+  targetId: string;
+  targetLabel: string;
+  franchise?: string;
+  uploadedBy: string;
+  uploadedAt: string;
+  status: "attached" | "pending_review" | "verified";
+};
+
+type RegisterDocsInput = {
+  scope: string;
+  targetId: string;
+  targetLabel: string;
+  franchise?: string;
+  status?: StoredDocument["status"];
+  action: string; // audit action verb, e.g. "attached KYC + compliance docs on license create"
+  docs: Array<{
+    id: string;
+    name: string;
+    size: number;
+    type: string;
+    kind: string;
+    category: "kyc" | "compliance";
+  }>;
+};
+
 type Ctx = {
   requests: ApprovalRequest[];
   audit: LocalAuditEntry[];
+  documents: StoredDocument[];
   submit: (r: Omit<ApprovalRequest, "id" | "requestedBy" | "requestedAt" | "status">) => ApprovalRequest;
   approve: (id: string, note?: string) => void;
   reject: (id: string, note?: string) => void;
+  registerDocuments: (input: RegisterDocsInput) => StoredDocument[];
 };
 
 const ApprovalsCtx = createContext<Ctx | null>(null);
@@ -58,6 +94,7 @@ export function ApprovalsProvider({ children }: { children: ReactNode }) {
   const { name } = useSession();
   const [requests, setRequests] = useState<ApprovalRequest[]>([]);
   const [audit, setAudit] = useState<LocalAuditEntry[]>([]);
+  const [documents, setDocuments] = useState<StoredDocument[]>([]);
 
   const appendAudit = useCallback(
     (entries: LocalAuditEntry[]) => setAudit((cur) => [...entries, ...cur]),
@@ -126,8 +163,51 @@ export function ApprovalsProvider({ children }: { children: ReactNode }) {
             targetId: req.targetIds.length ? t : undefined,
           })),
         );
+        // On approval of a license renewal, promote its attached docs from
+        // pending_review → verified so the Documents wall reflects the change.
+        if (status === "approved" && req.kind === "license.renew") {
+          setDocuments((cur) =>
+            cur.map((d) =>
+              req.targetIds.includes(d.targetId) && d.status === "pending_review"
+                ? { ...d, status: "verified" }
+                : d,
+            ),
+          );
+        }
         return cur.map((r) => (r.id === id ? updated : r));
       });
+    },
+    [name, appendAudit],
+  );
+
+  const registerDocuments: Ctx["registerDocuments"] = useCallback(
+    ({ scope, targetId, targetLabel, franchise, status = "attached", action, docs }) => {
+      if (docs.length === 0) return [];
+      const at = nowIso();
+      const stored: StoredDocument[] = docs.map((d) => ({
+        ...d,
+        scope,
+        targetId,
+        targetLabel,
+        franchise,
+        uploadedBy: name,
+        uploadedAt: at,
+        status,
+      }));
+      setDocuments((cur) => [...stored, ...cur]);
+      appendAudit([
+        {
+          id: uid(),
+          at,
+          actor: name,
+          action,
+          target: targetId,
+          meta: `${docs.length} document${docs.length === 1 ? "" : "s"}: ${docs.map((d) => d.name).join(", ")}`,
+          scope,
+          targetId,
+        },
+      ]);
+      return stored;
     },
     [name, appendAudit],
   );
@@ -136,11 +216,13 @@ export function ApprovalsProvider({ children }: { children: ReactNode }) {
     () => ({
       requests,
       audit,
+      documents,
       submit,
       approve: (id, note) => decide(id, "approved", note),
       reject: (id, note) => decide(id, "rejected", note),
+      registerDocuments,
     }),
-    [requests, audit, submit, decide],
+    [requests, audit, documents, submit, decide, registerDocuments],
   );
 
   return <ApprovalsCtx.Provider value={value}>{children}</ApprovalsCtx.Provider>;
@@ -181,6 +263,19 @@ export function useMergedAudit(
 ): AuditEntry[] {
   const local = useLocalAudit(scope, targetId);
   return useMemo(() => [...local, ...serverEntries], [local, serverEntries]);
+}
+
+export function useDocuments(filter?: { scope?: string; targetId?: string; category?: StoredDocument["category"] }) {
+  const { documents } = useApprovals();
+  return useMemo(() => {
+    if (!filter) return documents;
+    return documents.filter(
+      (d) =>
+        (!filter.scope || d.scope === filter.scope) &&
+        (!filter.targetId || d.targetId === filter.targetId) &&
+        (!filter.category || d.category === filter.category),
+    );
+  }, [documents, filter]);
 }
 
 export const APPROVAL_KIND_LABEL = KIND_LABEL;
