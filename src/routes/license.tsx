@@ -21,7 +21,7 @@ import { useShortcuts } from "@/lib/shortcuts";
 import { ExportMenu } from "@/components/boss/ExportMenu";
 import { fmtNumber } from "@/lib/export";
 import { FileCheck2, KeyRound, Paperclip, Plus, RefreshCw, ShieldAlert, ShieldCheck, UploadCloud, X } from "lucide-react";
-import { useApprovals, useMergedAudit } from "@/lib/approvals";
+import { useApprovals, useDocuments, useMergedAudit } from "@/lib/approvals";
 import { ApprovalQueueButton, ApprovalQueuePanel } from "@/components/boss/ApprovalQueuePanel";
 
 export const Route = createFileRoute("/license")({
