@@ -371,6 +371,26 @@ function LicenseDetailPanel({
             </dl>
           </Card>
 
+          <Card>
+            <div className="flex items-center gap-2 text-[11px] uppercase tracking-wider text-muted-foreground">
+              <Paperclip className="h-3.5 w-3.5" /> Documents ({docs.length})
+            </div>
+            {docs.length === 0 ? (
+              <div className="mt-2 text-[12px] text-muted-foreground">No documents linked to this license yet.</div>
+            ) : (
+              <ul className="mt-2 divide-y divide-border rounded-md border border-border">
+                {docs.map((d) => (
+                  <li key={d.id} className="flex items-center gap-2 px-3 py-2 text-[12px]">
+                    <FileCheck2 className="h-3.5 w-3.5 text-[color:var(--color-success)]" />
+                    <span className="truncate font-medium text-foreground">{d.name}</span>
+                    <span className="rounded bg-surface-2 px-1.5 py-0.5 text-[10.5px] text-muted-foreground capitalize">{d.category}</span>
+                    <span className="ml-auto text-[11px] text-muted-foreground">{d.status.replace("_", " ")}</span>
+                  </li>
+                ))}
+              </ul>
+            )}
+          </Card>
+
           <AuditTimeline entries={audit} loading={isLoading} />
         </div>
       )}
