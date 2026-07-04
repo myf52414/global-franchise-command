@@ -234,9 +234,22 @@ function LicenseWall() {
         open={newOpen}
         onClose={() => setNewOpen(false)}
         onSubmit={(d) => {
+          const targetId = `lic-${Date.now().toString(36)}`;
+          registerDocuments({
+            scope: "license",
+            targetId,
+            targetLabel: `${d.franchise} · ${d.plan}`,
+            franchise: d.franchise,
+            status: d.kycVerified ? "verified" : "pending_review",
+            action: "generated license with KYC + compliance docs",
+            docs: [
+              ...d.kycDocs.map((doc) => ({ ...doc, category: "kyc" as const })),
+              ...d.complianceDocs.map((doc) => ({ ...doc, category: "compliance" as const })),
+            ],
+          });
           toast({
             title: "License generated",
-            description: `${d.franchise} · ${d.plan} · ${d.kycDocs.length + d.complianceDocs.length} doc(s)`,
+            description: `${d.franchise} · ${d.plan} · ${d.kycDocs.length + d.complianceDocs.length} doc(s) filed`,
             tone: "success",
           });
           setNewOpen(false);
@@ -249,6 +262,15 @@ function LicenseWall() {
         canRenew={canGenerate}
         onSubmit={(d) => {
           if (!renewTarget) return;
+          registerDocuments({
+            scope: "license",
+            targetId: renewTarget.id,
+            targetLabel: `${renewTarget.franchise} · ${renewTarget.key}`,
+            franchise: renewTarget.franchise,
+            status: "pending_review",
+            action: "attached renewal compliance docs",
+            docs: d.complianceDocs.map((doc) => ({ ...doc, category: "compliance" as const })),
+          });
           submitApproval({
             kind: "license.renew",
             scope: "license",
