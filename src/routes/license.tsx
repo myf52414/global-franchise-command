@@ -310,6 +310,7 @@ function LicenseDetailPanel({
 }: { license: License | null; onClose: () => void; canRevoke: boolean; onAction: (label: string) => void; onRenew: () => void }) {
   const { data: server = [], isLoading } = useAuditTrail("license", license?.id);
   const audit = useMergedAudit(server, "license", license?.id);
+  const docs = useDocuments({ scope: "license", targetId: license?.id });
   return (
     <RightPanel
       open={!!license}
