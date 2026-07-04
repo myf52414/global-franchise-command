@@ -21,7 +21,7 @@ import { useShortcuts } from "@/lib/shortcuts";
 import { ExportMenu } from "@/components/boss/ExportMenu";
 import { fmtNumber } from "@/lib/export";
 import { FileCheck2, KeyRound, Paperclip, Plus, RefreshCw, ShieldAlert, ShieldCheck, UploadCloud, X } from "lucide-react";
-import { useApprovals, useMergedAudit } from "@/lib/approvals";
+import { useApprovals, useDocuments, useMergedAudit } from "@/lib/approvals";
 import { ApprovalQueueButton, ApprovalQueuePanel } from "@/components/boss/ApprovalQueuePanel";
 
 export const Route = createFileRoute("/license")({
@@ -57,7 +57,7 @@ function LicenseWall() {
   const [newOpen, setNewOpen] = useState(false);
   const [renewTarget, setRenewTarget] = useState<License | null>(null);
   const [queueOpen, setQueueOpen] = useState(false);
-  const { submit: submitApproval } = useApprovals();
+  const { submit: submitApproval, registerDocuments } = useApprovals();
 
   useShortcuts([
     { combo: "shift+n", description: "Generate license", handler: () => canGenerate && setNewOpen(true) },
@@ -234,9 +234,22 @@ function LicenseWall() {
         open={newOpen}
         onClose={() => setNewOpen(false)}
         onSubmit={(d) => {
+          const targetId = `lic-${Date.now().toString(36)}`;
+          registerDocuments({
+            scope: "license",
+            targetId,
+            targetLabel: `${d.franchise} · ${d.plan}`,
+            franchise: d.franchise,
+            status: d.kycVerified ? "verified" : "pending_review",
+            action: "generated license with KYC + compliance docs",
+            docs: [
+              ...d.kycDocs.map((doc) => ({ ...doc, category: "kyc" as const })),
+              ...d.complianceDocs.map((doc) => ({ ...doc, category: "compliance" as const })),
+            ],
+          });
           toast({
             title: "License generated",
-            description: `${d.franchise} · ${d.plan} · ${d.kycDocs.length + d.complianceDocs.length} doc(s)`,
+            description: `${d.franchise} · ${d.plan} · ${d.kycDocs.length + d.complianceDocs.length} doc(s) filed`,
             tone: "success",
           });
           setNewOpen(false);
@@ -249,6 +262,15 @@ function LicenseWall() {
         canRenew={canGenerate}
         onSubmit={(d) => {
           if (!renewTarget) return;
+          registerDocuments({
+            scope: "license",
+            targetId: renewTarget.id,
+            targetLabel: `${renewTarget.franchise} · ${renewTarget.key}`,
+            franchise: renewTarget.franchise,
+            status: "pending_review",
+            action: "attached renewal compliance docs",
+            docs: d.complianceDocs.map((doc) => ({ ...doc, category: "compliance" as const })),
+          });
           submitApproval({
             kind: "license.renew",
             scope: "license",
@@ -288,6 +310,7 @@ function LicenseDetailPanel({
 }: { license: License | null; onClose: () => void; canRevoke: boolean; onAction: (label: string) => void; onRenew: () => void }) {
   const { data: server = [], isLoading } = useAuditTrail("license", license?.id);
   const audit = useMergedAudit(server, "license", license?.id);
+  const docs = useDocuments({ scope: "license", targetId: license?.id });
   return (
     <RightPanel
       open={!!license}
@@ -346,6 +369,26 @@ function LicenseDetailPanel({
               <Row k="Issued" v={license.issuedAt} />
               <Row k="Expires" v={license.expiresAt} />
             </dl>
+          </Card>
+
+          <Card>
+            <div className="flex items-center gap-2 text-[11px] uppercase tracking-wider text-muted-foreground">
+              <Paperclip className="h-3.5 w-3.5" /> Documents ({docs.length})
+            </div>
+            {docs.length === 0 ? (
+              <div className="mt-2 text-[12px] text-muted-foreground">No documents linked to this license yet.</div>
+            ) : (
+              <ul className="mt-2 divide-y divide-border rounded-md border border-border">
+                {docs.map((d) => (
+                  <li key={d.id} className="flex items-center gap-2 px-3 py-2 text-[12px]">
+                    <FileCheck2 className="h-3.5 w-3.5 text-[color:var(--color-success)]" />
+                    <span className="truncate font-medium text-foreground">{d.name}</span>
+                    <span className="rounded bg-surface-2 px-1.5 py-0.5 text-[10.5px] text-muted-foreground capitalize">{d.category}</span>
+                    <span className="ml-auto text-[11px] text-muted-foreground">{d.status.replace("_", " ")}</span>
+                  </li>
+                ))}
+              </ul>
+            )}
           </Card>
 
           <AuditTimeline entries={audit} loading={isLoading} />
