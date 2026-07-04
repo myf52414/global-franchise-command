@@ -57,7 +57,7 @@ function LicenseWall() {
   const [newOpen, setNewOpen] = useState(false);
   const [renewTarget, setRenewTarget] = useState<License | null>(null);
   const [queueOpen, setQueueOpen] = useState(false);
-  const { submit: submitApproval } = useApprovals();
+  const { submit: submitApproval, registerDocuments } = useApprovals();
 
   useShortcuts([
     { combo: "shift+n", description: "Generate license", handler: () => canGenerate && setNewOpen(true) },
