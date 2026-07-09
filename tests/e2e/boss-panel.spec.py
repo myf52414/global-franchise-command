@@ -157,6 +157,143 @@ async def main():
         await test_rbac_export(context)
         await test_topbar(context)
 
+async def _fill_license_form(page, franchise, expires, kyc_names, comp_names):
+    await page.get_by_role("button", name=re.compile("Generate License")).first.click()
+    await page.wait_for_timeout(300)
+    await page.locator('input[name="franchise"]').fill(franchise)
+    await page.locator('select[name="plan"]').select_option("growth")
+    await page.locator('input[name="devicesMax"]').fill("10")
+    await page.locator('input[name="domainsMax"]').fill("5")
+    await page.locator('input[name="expiresAt"]').fill(expires)
+    # Two DocUploaders: [0] KYC, [1] Compliance. Each has a hidden input[type=file].
+    file_inputs = page.locator('input[type="file"]')
+    kyc_files = [
+        {"name": n, "mimeType": "application/pdf", "buffer": b"%PDF-1.4 test"} for n in kyc_names
+    ]
+    comp_files = [
+        {"name": n, "mimeType": "application/pdf", "buffer": b"%PDF-1.4 test"} for n in comp_names
+    ]
+    await file_inputs.nth(0).set_input_files(kyc_files)
+    await file_inputs.nth(1).set_input_files(comp_files)
+    await page.get_by_role("button", name=re.compile(r"^Generate$")).first.click()
+    await page.wait_for_timeout(600)
+
+async def test_license_create_audit_and_docs(context):
+    page = await context.new_page()
+    await page.goto(f"{BASE}/license", wait_until="networkidle")
+    stamp = f"E2E Create {int(asyncio.get_event_loop().time()*1000)}"
+    kyc = ["kyc-id-e2e.pdf", "kyc-addr-e2e.pdf"]
+    comp = ["compliance-e2e.pdf"]
+    await _fill_license_form(page, stamp, "2030-01-01", kyc, comp)
+    # Open the newly-created row's detail drawer
+    row = page.locator(f'tr:has-text("{stamp}")').first
+    try:
+        await row.wait_for(timeout=4000)
+        await row.click()
+    except Exception:
+        check("license create · row appears", False, "row not found after create")
+        await page.close(); return
+    check("license create · row appears", True, stamp)
+    await page.wait_for_timeout(400)
+
+    # Audit timeline drawer lists every uploaded file
+    drawer = page.locator('[role="dialog"], aside').last
+    drawer_text = await drawer.inner_text()
+    all_files_visible = all(name in drawer_text for name in kyc + comp)
+    check("license create · drawer shows every uploaded file", all_files_visible,
+          f"missing={[n for n in kyc+comp if n not in drawer_text]}")
+    # Audit timeline entry references the generated action
+    check("license create · audit timeline entry logged",
+          "generated license" in drawer_text.lower() or "audit" in drawer_text.lower(),
+          drawer_text[:120])
+    await page.screenshot(path=str(SHOT / "license_create_drawer.png"))
+
+    # Documents wall must list every uploaded file with a link back
+    await page.goto(f"{BASE}/documents", wait_until="networkidle")
+    await page.wait_for_timeout(400)
+    body = await page.locator("body").inner_text()
+    for name in kyc + comp:
+        check(f"documents wall lists {name}", name in body)
+    # Each row has an anchor to /license (targetLabel link)
+    linked = await page.locator('a[href*="/license"]').count()
+    check("documents wall links back to /license", linked >= len(kyc) + len(comp),
+          f"anchor count={linked}")
+    await page.screenshot(path=str(SHOT / "documents_after_create.png"))
+    await page.close()
+
+async def test_license_renew_audit_and_docs(context):
+    page = await context.new_page()
+    await page.goto(f"{BASE}/license", wait_until="networkidle")
+    # First create a license we can renew
+    stamp = f"E2E Renew {int(asyncio.get_event_loop().time()*1000)}"
+    await _fill_license_form(page, stamp,
+                             "2027-06-01",
+                             ["kyc-renew-src.pdf"],
+                             ["comp-renew-src.pdf"])
+    row = page.locator(f'tr:has-text("{stamp}")').first
+    try:
+        await row.wait_for(timeout=4000)
+        await row.click()
+    except Exception:
+        check("license renew · seed row appears", False)
+        await page.close(); return
+    await page.wait_for_timeout(300)
+    # Open Renew panel from the drawer
+    try:
+        await page.get_by_role("button", name=re.compile(r"^Renew$")).first.click(timeout=3000)
+    except Exception:
+        check("license renew · Renew button clickable", False)
+        await page.close(); return
+    await page.wait_for_timeout(300)
+
+    renew_files = ["renewal-tax-2030.pdf", "renewal-compliance-2030.pdf"]
+    await page.locator('input[name="expiresAt"]').last.fill("2030-12-31")
+    file_inputs = page.locator('input[type="file"]')
+    await file_inputs.last.set_input_files([
+        {"name": n, "mimeType": "application/pdf", "buffer": b"%PDF-1.4 renew"} for n in renew_files
+    ])
+    await page.get_by_role("button", name=re.compile(r"Submit|Queue|Renew")).last.click()
+    await page.wait_for_timeout(600)
+
+    # Re-open the license drawer to inspect audit timeline + docs card
+    row = page.locator(f'tr:has-text("{stamp}")').first
+    await row.click()
+    await page.wait_for_timeout(400)
+    drawer_text = await page.locator('[role="dialog"], aside').last.inner_text()
+    all_files = all(n in drawer_text for n in renew_files)
+    check("license renew · drawer shows renewal files", all_files,
+          f"missing={[n for n in renew_files if n not in drawer_text]}")
+    check("license renew · audit entry for renewal",
+          "renewal" in drawer_text.lower() or "renew" in drawer_text.lower(),
+          drawer_text[:120])
+    await page.screenshot(path=str(SHOT / "license_renew_drawer.png"))
+
+    # Documents wall lists renewal files, linked to same license record
+    await page.goto(f"{BASE}/documents", wait_until="networkidle")
+    await page.wait_for_timeout(400)
+    body = await page.locator("body").inner_text()
+    for n in renew_files:
+        check(f"documents wall lists renewal file {n}", n in body)
+    # Filter by franchise stamp -> renewal + original docs share the target
+    check("documents wall links renewal docs to the license record",
+          stamp in body, "franchise stamp missing on documents wall")
+    await page.screenshot(path=str(SHOT / "documents_after_renew.png"))
+    await page.close()
+
+async def main():
+    async with async_playwright() as p:
+        browser = await p.chromium.launch(headless=True)
+        context = await browser.new_context(viewport={"width": 1280, "height": 1800})
+
+        await test_wall_navigation(context)
+        for wall, hint in [("/revenue", "revenue"), ("/license", "license"), ("/commission", "commission")]:
+            await test_export_empty(context, wall, hint)
+        await test_export_failure(context)
+        await test_rbac_export(context)
+        await test_topbar(context)
+        await test_license_create_audit_and_docs(context)
+        await test_license_renew_audit_and_docs(context)
+
         await browser.close()
 
     print(f"\n=== SUMMARY: {len(results['pass'])} passed, {len(results['fail'])} failed ===")
@@ -165,3 +302,4 @@ async def main():
     sys.exit(0 if not results["fail"] else 1)
 
 asyncio.run(main())
+
