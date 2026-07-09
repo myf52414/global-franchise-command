@@ -27,6 +27,55 @@ def check(name, cond, detail=""):
     (results["pass"] if cond else results["fail"]).append(f"{name} :: {detail}")
     print(("PASS" if cond else "FAIL"), name, detail)
 
+# ---------- deterministic wait / retry helpers ----------
+
+async def wait_until(fn, timeout=5000, interval=100, description=""):
+    """Poll `fn` (async, returns truthy) until True or timeout. Returns bool."""
+    deadline = asyncio.get_event_loop().time() + timeout / 1000
+    while asyncio.get_event_loop().time() < deadline:
+        try:
+            if await fn():
+                return True
+        except Exception:
+            pass
+        await asyncio.sleep(interval / 1000)
+    return False
+
+async def wait_for_text(page, text, timeout=5000):
+    return await wait_until(
+        lambda: page.locator(f'text={text}').first.is_visible(),
+        timeout=timeout, description=f"text:{text}",
+    )
+
+async def wait_for_toast(page, pattern, timeout=4000):
+    rx = re.compile(pattern, re.I)
+    async def visible():
+        loc = page.locator("body").locator("div,li,section").filter(has_text=rx).first
+        return await loc.count() > 0 and await loc.is_visible()
+    return await wait_until(visible, timeout=timeout)
+
+async def wait_for_networkidle(page, timeout=8000):
+    try:
+        await page.wait_for_load_state("networkidle", timeout=timeout)
+        return True
+    except Exception:
+        return False
+
+async def with_retry(coro_factory, attempts=3, label=""):
+    """Run an async callable up to `attempts` times, swallowing timeout-ish errors.
+    Returns (ok, last_error)."""
+    last = None
+    for i in range(1, attempts + 1):
+        try:
+            await coro_factory()
+            return True, None
+        except Exception as e:
+            last = e
+            print(f"[retry {i}/{attempts}] {label}: {str(e)[:120]}")
+            await asyncio.sleep(0.3 * i)
+    return False, last
+
+
 async def get_export_button(page):
     # ExportMenu button lives outside the TopBar <header>. Match any button
     # whose visible text starts with "Export" (Export / Export Ledger /
