@@ -145,17 +145,8 @@ async def test_topbar(context):
             check(f"[{role}] command palette (Ctrl+K) opens", False)
         await page.close()
 
-async def main():
-    async with async_playwright() as p:
-        browser = await p.chromium.launch(headless=True)
-        context = await browser.new_context(viewport={"width": 1280, "height": 1800})
 
-        await test_wall_navigation(context)
-        for wall, hint in [("/revenue", "revenue"), ("/license", "license"), ("/commission", "commission")]:
-            await test_export_empty(context, wall, hint)
-        await test_export_failure(context)
-        await test_rbac_export(context)
-        await test_topbar(context)
+
 
 async def _fill_license_form(page, franchise, expires, kyc_names, comp_names):
     await page.get_by_role("button", name=re.compile("Generate License")).first.click()
