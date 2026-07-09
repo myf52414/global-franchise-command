@@ -27,6 +27,55 @@ def check(name, cond, detail=""):
     (results["pass"] if cond else results["fail"]).append(f"{name} :: {detail}")
     print(("PASS" if cond else "FAIL"), name, detail)
 
+# ---------- deterministic wait / retry helpers ----------
+
+async def wait_until(fn, timeout=5000, interval=100, description=""):
+    """Poll `fn` (async, returns truthy) until True or timeout. Returns bool."""
+    deadline = asyncio.get_event_loop().time() + timeout / 1000
+    while asyncio.get_event_loop().time() < deadline:
+        try:
+            if await fn():
+                return True
+        except Exception:
+            pass
+        await asyncio.sleep(interval / 1000)
+    return False
+
+async def wait_for_text(page, text, timeout=5000):
+    return await wait_until(
+        lambda: page.locator(f'text={text}').first.is_visible(),
+        timeout=timeout, description=f"text:{text}",
+    )
+
+async def wait_for_toast(page, pattern, timeout=4000):
+    rx = re.compile(pattern, re.I)
+    async def visible():
+        loc = page.locator("body").locator("div,li,section").filter(has_text=rx).first
+        return await loc.count() > 0 and await loc.is_visible()
+    return await wait_until(visible, timeout=timeout)
+
+async def wait_for_networkidle(page, timeout=8000):
+    try:
+        await page.wait_for_load_state("networkidle", timeout=timeout)
+        return True
+    except Exception:
+        return False
+
+async def with_retry(coro_factory, attempts=3, label=""):
+    """Run an async callable up to `attempts` times, swallowing timeout-ish errors.
+    Returns (ok, last_error)."""
+    last = None
+    for i in range(1, attempts + 1):
+        try:
+            await coro_factory()
+            return True, None
+        except Exception as e:
+            last = e
+            print(f"[retry {i}/{attempts}] {label}: {str(e)[:120]}")
+            await asyncio.sleep(0.3 * i)
+    return False, last
+
+
 async def get_export_button(page):
     # ExportMenu button lives outside the TopBar <header>. Match any button
     # whose visible text starts with "Export" (Export / Export Ledger /
@@ -53,12 +102,18 @@ async def test_wall_navigation(context):
     console_errors = []
     page.on("console", lambda m: console_errors.append(m.text) if m.type == "error" else None)
     for path in WALLS:
-        resp = await page.goto(BASE + path, wait_until="networkidle")
-        ok = resp is not None and resp.status < 400
-        check(f"nav {path}", ok, f"status={resp.status if resp else 'none'}")
+        resp = None
+        async def nav():
+            nonlocal resp
+            resp = await page.goto(BASE + path, wait_until="domcontentloaded", timeout=15000)
+            await wait_for_networkidle(page, timeout=6000)
+        ok, err = await with_retry(nav, attempts=3, label=f"nav {path}")
+        good = ok and resp is not None and resp.status < 400
+        check(f"nav {path}", good, f"status={resp.status if resp else 'none'} err={err}")
     check("no console errors during nav", len(console_errors) == 0, f"errors={console_errors[:3]}")
     await page.screenshot(path=str(SHOT / "walls_last.png"))
     await page.close()
+
 
 async def test_export_empty(context, wall, filename_hint):
     page = await context.new_page()
@@ -145,6 +200,109 @@ async def test_topbar(context):
             check(f"[{role}] command palette (Ctrl+K) opens", False)
         await page.close()
 
+async def test_license_upload_rejects_invalid(context):
+    """Negative-path coverage: invalid MIME, oversize file, and missing
+    KYC/compliance uploads must be rejected by the UI and never surface on
+    the Documents wall."""
+    page = await context.new_page()
+
+    # Snapshot Documents-wall body BEFORE to diff filenames afterwards.
+    await page.goto(f"{BASE}/documents", wait_until="domcontentloaded")
+    await wait_for_networkidle(page)
+    before_body = await page.locator("body").inner_text()
+
+    await page.goto(f"{BASE}/license", wait_until="domcontentloaded")
+    await wait_for_networkidle(page)
+    stamp = f"E2E Negative {int(asyncio.get_event_loop().time()*1000)}"
+    bad_names = {
+        "invalid_mime": f"malware-{stamp}.exe",
+        "oversize":     f"oversize-{stamp}.pdf",
+        "missing_kyc":  f"orphan-comp-{stamp}.pdf",
+        "missing_comp": f"orphan-kyc-{stamp}.pdf",
+    }
+
+    await page.get_by_role("button", name=re.compile("Generate License")).first.click()
+    ok = await wait_until(
+        lambda: page.locator('input[name="franchise"]').is_visible(), timeout=3000,
+    )
+    check("negative · generate panel opens", ok)
+    await page.locator('input[name="franchise"]').fill(stamp)
+    await page.locator('select[name="plan"]').select_option("growth")
+    await page.locator('input[name="devicesMax"]').fill("10")
+    await page.locator('input[name="domainsMax"]').fill("5")
+    await page.locator('input[name="expiresAt"]').fill("2030-01-01")
+
+    file_inputs = page.locator('input[type="file"]')
+
+    # (1) Invalid MIME on the KYC uploader → uploader rejects, list stays empty.
+    await file_inputs.nth(0).set_input_files([{
+        "name": bad_names["invalid_mime"],
+        "mimeType": "application/x-msdownload",
+        "buffer": b"MZ\x90 fake exe",
+    }])
+    await page.wait_for_timeout(200)
+    unsupported = await page.locator('text=/unsupported type/i').count()
+    listed_bad = await page.locator(f'text={bad_names["invalid_mime"]}').count()
+    check("negative · invalid MIME rejected inline", unsupported > 0 and listed_bad == 0,
+          f"unsupported={unsupported} listed={listed_bad}")
+
+    # (2) Oversize (>10 MB) PDF on the KYC uploader → rejected.
+    await file_inputs.nth(0).set_input_files([{
+        "name": bad_names["oversize"],
+        "mimeType": "application/pdf",
+        "buffer": b"%PDF-1.4" + (b"0" * (10 * 1024 * 1024 + 32)),
+    }])
+    await page.wait_for_timeout(300)
+    exceeds = await page.locator('text=/exceeds 10 MB/i').count()
+    listed_over = await page.locator(f'text={bad_names["oversize"]}').count()
+    check("negative · oversize file rejected inline", exceeds > 0 and listed_over == 0,
+          f"exceeds={exceeds} listed={listed_over}")
+
+    # (3) Submit with only compliance filled → schema error for missing KYC.
+    await file_inputs.nth(1).set_input_files([{
+        "name": bad_names["missing_kyc"],
+        "mimeType": "application/pdf",
+        "buffer": b"%PDF-1.4 comp",
+    }])
+    await page.get_by_role("button", name=re.compile(r"^Generate$")).first.click()
+    await page.wait_for_timeout(400)
+    kyc_err = await page.locator('text=/at least one KYC document/i').count()
+    check("negative · missing KYC blocks submit", kyc_err > 0, f"errs={kyc_err}")
+
+    # (4) Swap: only KYC filled → schema error for missing compliance.
+    # Clear compliance by removing the row.
+    remove_btns = page.locator('button[aria-label="Remove"]')
+    if await remove_btns.count() > 0:
+        await remove_btns.last.click()
+    await file_inputs.nth(0).set_input_files([{
+        "name": bad_names["missing_comp"],
+        "mimeType": "application/pdf",
+        "buffer": b"%PDF-1.4 kyc",
+    }])
+    await page.get_by_role("button", name=re.compile(r"^Generate$")).first.click()
+    await page.wait_for_timeout(400)
+    comp_err = await page.locator('text=/at least one compliance document/i').count()
+    check("negative · missing compliance blocks submit", comp_err > 0, f"errs={comp_err}")
+
+    await page.screenshot(path=str(SHOT / "negative_upload_form.png"))
+
+    # Close panel (Escape) and verify no license row was created.
+    await page.keyboard.press("Escape")
+    await page.wait_for_timeout(200)
+    row_count = await page.locator(f'tr:has-text("{stamp}")').count()
+    check("negative · no license row created", row_count == 0, f"rows={row_count}")
+
+    # Documents wall must not contain any of the rejected filenames.
+    await page.goto(f"{BASE}/documents", wait_until="domcontentloaded")
+    await wait_for_networkidle(page)
+    after_body = await page.locator("body").inner_text()
+    for label, name in bad_names.items():
+        check(f"negative · '{label}' file absent from Documents wall",
+              name not in after_body, name)
+    check("negative · Documents wall unchanged by rejected uploads",
+          stamp not in after_body, f"stamp leaked: {stamp}")
+    await page.screenshot(path=str(SHOT / "negative_documents_wall.png"))
+    await page.close()
 
 
 
@@ -284,6 +442,8 @@ async def main():
         await test_topbar(context)
         await test_license_create_audit_and_docs(context)
         await test_license_renew_audit_and_docs(context)
+        await test_license_upload_rejects_invalid(context)
+
 
         await browser.close()
 
