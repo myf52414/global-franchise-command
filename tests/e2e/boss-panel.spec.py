@@ -442,6 +442,8 @@ async def main():
         await test_topbar(context)
         await test_license_create_audit_and_docs(context)
         await test_license_renew_audit_and_docs(context)
+        await test_license_upload_rejects_invalid(context)
+
 
         await browser.close()
 
