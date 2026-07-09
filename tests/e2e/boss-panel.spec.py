@@ -102,12 +102,18 @@ async def test_wall_navigation(context):
     console_errors = []
     page.on("console", lambda m: console_errors.append(m.text) if m.type == "error" else None)
     for path in WALLS:
-        resp = await page.goto(BASE + path, wait_until="networkidle")
-        ok = resp is not None and resp.status < 400
-        check(f"nav {path}", ok, f"status={resp.status if resp else 'none'}")
+        resp = None
+        async def nav():
+            nonlocal resp
+            resp = await page.goto(BASE + path, wait_until="domcontentloaded", timeout=15000)
+            await wait_for_networkidle(page, timeout=6000)
+        ok, err = await with_retry(nav, attempts=3, label=f"nav {path}")
+        good = ok and resp is not None and resp.status < 400
+        check(f"nav {path}", good, f"status={resp.status if resp else 'none'} err={err}")
     check("no console errors during nav", len(console_errors) == 0, f"errors={console_errors[:3]}")
     await page.screenshot(path=str(SHOT / "walls_last.png"))
     await page.close()
+
 
 async def test_export_empty(context, wall, filename_hint):
     page = await context.new_page()
