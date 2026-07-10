@@ -33,15 +33,49 @@ export function WallHeader({
         )}
       </div>
       <div className="flex items-center gap-2">
-        {actions ?? (
-          <>
-            <Btn variant="ghost"><RefreshCw className="h-3.5 w-3.5" /> Refresh</Btn>
-            <Btn variant="outline"><Filter className="h-3.5 w-3.5" /> Filter</Btn>
-            <Btn variant="primary"><Plus className="h-3.5 w-3.5" /> New</Btn>
-          </>
-        )}
+        {actions ?? <DefaultWallActions title={title} />}
       </div>
     </div>
+  );
+}
+
+function DefaultWallActions({ title }: { title: string }) {
+  const { toast } = useToast();
+  return (
+    <>
+      <Btn
+        variant="ghost"
+        onClick={() =>
+          toast({ title: `${title} refreshed`, tone: "success" })
+        }
+      >
+        <RefreshCw className="h-3.5 w-3.5" /> Refresh
+      </Btn>
+      <Btn
+        variant="outline"
+        onClick={() =>
+          toast({
+            title: "Filters",
+            description: "Use the toolbar filters inside each section.",
+            tone: "info",
+          })
+        }
+      >
+        <Filter className="h-3.5 w-3.5" /> Filter
+      </Btn>
+      <Btn
+        variant="primary"
+        onClick={() =>
+          toast({
+            title: `New ${title.toLowerCase()}`,
+            description: "Creation flow will be enabled with the backend.",
+            tone: "info",
+          })
+        }
+      >
+        <Plus className="h-3.5 w-3.5" /> New
+      </Btn>
+    </>
   );
 }
 
