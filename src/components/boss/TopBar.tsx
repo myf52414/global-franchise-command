@@ -59,6 +59,14 @@ export function TopBar() {
 
   const toggle = (k: MenuKey) => setMenu((m) => (m === k ? null : k));
 
+  // Auto-scroll the active wall tab into view when the route changes.
+  useEffect(() => {
+    const el = scrollerRef.current?.querySelector<HTMLElement>(
+      `[data-wall-active="true"]`,
+    );
+    el?.scrollIntoView({ block: "nearest", inline: "center", behavior: "smooth" });
+  }, [currentPath]);
+
   const notifications = useMemo(
     () =>
       pending.map((p: ApprovalRequest) => ({
