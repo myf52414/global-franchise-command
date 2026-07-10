@@ -207,8 +207,10 @@ export function TopBar() {
           <div className="relative">
             <button
               onClick={() => toggle("user")}
-              className="ml-2 flex h-9 items-center gap-2 rounded-md border border-border bg-surface-2 pl-1 pr-2 hover:border-border-strong"
+              className="ml-2 flex h-9 items-center gap-2 rounded-md border border-border bg-surface-2 pl-1 pr-2 transition-colors hover:border-border-strong"
               aria-label="Account menu"
+              aria-haspopup="menu"
+              aria-expanded={menu === "user"}
             >
               <div className="grid h-7 w-7 place-items-center rounded bg-primary/10 text-primary">
                 <User2 className="h-3.5 w-3.5" />
@@ -219,7 +221,9 @@ export function TopBar() {
                   Global · {session.role}
                 </div>
               </div>
-              <ChevronDown className="h-3.5 w-3.5 text-muted-foreground" />
+              <ChevronDown
+                className={`h-3.5 w-3.5 text-muted-foreground transition-transform ${menu === "user" ? "rotate-180" : ""}`}
+              />
             </button>
             {menu === "user" && (
               <MenuPanel
