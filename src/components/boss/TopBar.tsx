@@ -354,18 +354,24 @@ function IconBtn({
   children,
   label,
   onClick,
+  active = false,
 }: {
   children: React.ReactNode;
   label: string;
   onClick?: () => void;
+  active?: boolean;
 }) {
   return (
     <button
       type="button"
       title={label}
       aria-label={label}
+      aria-haspopup="menu"
+      aria-expanded={active}
       onClick={onClick}
-      className="relative grid h-9 w-9 place-items-center rounded-md border border-transparent text-muted-foreground transition-colors hover:border-border hover:bg-surface-2 hover:text-foreground"
+      className={`relative grid h-9 w-9 place-items-center rounded-md border text-muted-foreground transition-colors hover:border-border hover:bg-surface-2 hover:text-foreground ${
+        active ? "border-border bg-surface-2 text-foreground" : "border-transparent"
+      }`}
     >
       {children}
     </button>
