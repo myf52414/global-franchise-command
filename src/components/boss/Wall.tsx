@@ -207,9 +207,6 @@ export function DataTable({
         <div className="text-[12px] text-muted-foreground">
           {caption ?? "0 records"}
         </div>
-        <div className="flex items-center gap-2 text-[11px] text-muted-foreground">
-          <span>Connect data source to populate</span>
-        </div>
       </div>
       <div className="overflow-x-auto">
         <table className="w-full text-left text-[12.5px]">
@@ -224,11 +221,16 @@ export function DataTable({
           </thead>
           <tbody>
             <tr>
-              <td
-                colSpan={columns.length}
-                className="px-4 py-16 text-center text-muted-foreground"
-              >
-                No records yet — table is wired and waiting for the backend.
+              <td colSpan={columns.length} className="px-4 py-14 text-center">
+                <div className="mx-auto grid h-9 w-9 place-items-center rounded-md border border-dashed border-border-strong text-muted-foreground">
+                  <Inbox className="h-4 w-4" />
+                </div>
+                <div className="mt-2 text-[13px] font-medium text-foreground">
+                  No records yet
+                </div>
+                <div className="mx-auto mt-1 max-w-md text-[12px] text-muted-foreground">
+                  Records will appear here once the backend is connected or data is imported.
+                </div>
               </td>
             </tr>
           </tbody>
