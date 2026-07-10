@@ -160,9 +160,11 @@ export function Stat({
       <div className={`mt-2 text-[22px] font-semibold leading-none tracking-tight ${toneClass}`}>
         {value ?? <span className="text-muted-foreground/60">—</span>}
       </div>
-      <div className="mt-2 text-[11px] text-muted-foreground">
-        {hint ?? "Awaiting data source"}
-      </div>
+      {(hint || value === undefined) && (
+        <div className="mt-2 text-[11px] text-muted-foreground">
+          {hint ?? "Awaiting data"}
+        </div>
+      )}
     </Card>
   );
 }
