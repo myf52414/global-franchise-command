@@ -110,7 +110,7 @@ export function TopBar() {
         <div ref={menuRef} className="ml-auto flex items-center gap-1.5">
           {/* Import */}
           <div className="relative">
-            <IconBtn label="Import Center" onClick={() => toggle("import")}>
+            <IconBtn label="Import Center" active={menu === "import"} onClick={() => toggle("import")}>
               <Upload className="h-4 w-4" />
             </IconBtn>
             {menu === "import" && (
@@ -137,7 +137,7 @@ export function TopBar() {
 
           {/* Export */}
           <div className="relative">
-            <IconBtn label="Export Center" onClick={() => toggle("export")}>
+            <IconBtn label="Export Center" active={menu === "export"} onClick={() => toggle("export")}>
               <Download className="h-4 w-4" />
             </IconBtn>
             {menu === "export" && (
@@ -164,7 +164,7 @@ export function TopBar() {
 
           {/* Notifications */}
           <div className="relative">
-            <IconBtn label="Notifications" onClick={() => toggle("notifications")}>
+            <IconBtn label="Notifications" active={menu === "notifications"} onClick={() => toggle("notifications")}>
               <Bell className="h-4 w-4" />
               {notifications.length > 0 && (
                 <span className="absolute top-1 right-1 grid h-3.5 min-w-3.5 place-items-center rounded-full bg-destructive px-1 text-[9px] font-semibold leading-none text-destructive-foreground">
