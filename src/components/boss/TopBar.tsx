@@ -271,10 +271,12 @@ export function TopBar() {
               <Link
                 key={w.to}
                 to={w.to}
+                data-wall-active={active || undefined}
+                aria-current={active ? "page" : undefined}
                 className={`whitespace-nowrap border-b-2 px-3 py-2.5 text-[12.5px] font-medium transition-colors ${
                   active
-                    ? "border-primary text-foreground"
-                    : "border-transparent text-muted-foreground hover:text-foreground"
+                    ? "border-primary bg-surface-2/60 text-foreground"
+                    : "border-transparent text-muted-foreground hover:bg-surface-2/40 hover:text-foreground"
                 }`}
               >
                 {w.label}
