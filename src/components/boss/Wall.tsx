@@ -1,5 +1,6 @@
 import type { ReactNode } from "react";
-import { ChevronRight, Filter, Plus, RefreshCw } from "lucide-react";
+import { ChevronRight, Filter, Inbox, Plus, RefreshCw } from "lucide-react";
+import { useToast } from "@/lib/toast";
 
 export function WallHeader({
   eyebrow,
@@ -32,15 +33,49 @@ export function WallHeader({
         )}
       </div>
       <div className="flex items-center gap-2">
-        {actions ?? (
-          <>
-            <Btn variant="ghost"><RefreshCw className="h-3.5 w-3.5" /> Refresh</Btn>
-            <Btn variant="outline"><Filter className="h-3.5 w-3.5" /> Filter</Btn>
-            <Btn variant="primary"><Plus className="h-3.5 w-3.5" /> New</Btn>
-          </>
-        )}
+        {actions ?? <DefaultWallActions title={title} />}
       </div>
     </div>
+  );
+}
+
+function DefaultWallActions({ title }: { title: string }) {
+  const { toast } = useToast();
+  return (
+    <>
+      <Btn
+        variant="ghost"
+        onClick={() =>
+          toast({ title: `${title} refreshed`, tone: "success" })
+        }
+      >
+        <RefreshCw className="h-3.5 w-3.5" /> Refresh
+      </Btn>
+      <Btn
+        variant="outline"
+        onClick={() =>
+          toast({
+            title: "Filters",
+            description: "Use the toolbar filters inside each section.",
+            tone: "info",
+          })
+        }
+      >
+        <Filter className="h-3.5 w-3.5" /> Filter
+      </Btn>
+      <Btn
+        variant="primary"
+        onClick={() =>
+          toast({
+            title: `New ${title.toLowerCase()}`,
+            description: "Creation flow will be enabled with the backend.",
+            tone: "info",
+          })
+        }
+      >
+        <Plus className="h-3.5 w-3.5" /> New
+      </Btn>
+    </>
   );
 }
 
@@ -125,9 +160,11 @@ export function Stat({
       <div className={`mt-2 text-[22px] font-semibold leading-none tracking-tight ${toneClass}`}>
         {value ?? <span className="text-muted-foreground/60">—</span>}
       </div>
-      <div className="mt-2 text-[11px] text-muted-foreground">
-        {hint ?? "Awaiting data source"}
-      </div>
+      {(hint || value === undefined) && (
+        <div className="mt-2 text-[11px] text-muted-foreground">
+          {hint ?? "Awaiting data"}
+        </div>
+      )}
     </Card>
   );
 }
@@ -170,9 +207,6 @@ export function DataTable({
         <div className="text-[12px] text-muted-foreground">
           {caption ?? "0 records"}
         </div>
-        <div className="flex items-center gap-2 text-[11px] text-muted-foreground">
-          <span>Connect data source to populate</span>
-        </div>
       </div>
       <div className="overflow-x-auto">
         <table className="w-full text-left text-[12.5px]">
@@ -187,11 +221,16 @@ export function DataTable({
           </thead>
           <tbody>
             <tr>
-              <td
-                colSpan={columns.length}
-                className="px-4 py-16 text-center text-muted-foreground"
-              >
-                No records yet — table is wired and waiting for the backend.
+              <td colSpan={columns.length} className="px-4 py-14 text-center">
+                <div className="mx-auto grid h-9 w-9 place-items-center rounded-md border border-dashed border-border-strong text-muted-foreground">
+                  <Inbox className="h-4 w-4" />
+                </div>
+                <div className="mt-2 text-[13px] font-medium text-foreground">
+                  No records yet
+                </div>
+                <div className="mx-auto mt-1 max-w-md text-[12px] text-muted-foreground">
+                  Records will appear here once the backend is connected or data is imported.
+                </div>
               </td>
             </tr>
           </tbody>

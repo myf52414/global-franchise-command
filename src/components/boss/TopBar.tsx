@@ -59,6 +59,14 @@ export function TopBar() {
 
   const toggle = (k: MenuKey) => setMenu((m) => (m === k ? null : k));
 
+  // Auto-scroll the active wall tab into view when the route changes.
+  useEffect(() => {
+    const el = scrollerRef.current?.querySelector<HTMLElement>(
+      `[data-wall-active="true"]`,
+    );
+    el?.scrollIntoView({ block: "nearest", inline: "center", behavior: "smooth" });
+  }, [currentPath]);
+
   const notifications = useMemo(
     () =>
       pending.map((p: ApprovalRequest) => ({
@@ -102,7 +110,7 @@ export function TopBar() {
         <div ref={menuRef} className="ml-auto flex items-center gap-1.5">
           {/* Import */}
           <div className="relative">
-            <IconBtn label="Import Center" onClick={() => toggle("import")}>
+            <IconBtn label="Import Center" active={menu === "import"} onClick={() => toggle("import")}>
               <Upload className="h-4 w-4" />
             </IconBtn>
             {menu === "import" && (
@@ -129,7 +137,7 @@ export function TopBar() {
 
           {/* Export */}
           <div className="relative">
-            <IconBtn label="Export Center" onClick={() => toggle("export")}>
+            <IconBtn label="Export Center" active={menu === "export"} onClick={() => toggle("export")}>
               <Download className="h-4 w-4" />
             </IconBtn>
             {menu === "export" && (
@@ -156,7 +164,7 @@ export function TopBar() {
 
           {/* Notifications */}
           <div className="relative">
-            <IconBtn label="Notifications" onClick={() => toggle("notifications")}>
+            <IconBtn label="Notifications" active={menu === "notifications"} onClick={() => toggle("notifications")}>
               <Bell className="h-4 w-4" />
               {notifications.length > 0 && (
                 <span className="absolute top-1 right-1 grid h-3.5 min-w-3.5 place-items-center rounded-full bg-destructive px-1 text-[9px] font-semibold leading-none text-destructive-foreground">
@@ -199,8 +207,10 @@ export function TopBar() {
           <div className="relative">
             <button
               onClick={() => toggle("user")}
-              className="ml-2 flex h-9 items-center gap-2 rounded-md border border-border bg-surface-2 pl-1 pr-2 hover:border-border-strong"
+              className="ml-2 flex h-9 items-center gap-2 rounded-md border border-border bg-surface-2 pl-1 pr-2 transition-colors hover:border-border-strong"
               aria-label="Account menu"
+              aria-haspopup="menu"
+              aria-expanded={menu === "user"}
             >
               <div className="grid h-7 w-7 place-items-center rounded bg-primary/10 text-primary">
                 <User2 className="h-3.5 w-3.5" />
@@ -211,7 +221,9 @@ export function TopBar() {
                   Global · {session.role}
                 </div>
               </div>
-              <ChevronDown className="h-3.5 w-3.5 text-muted-foreground" />
+              <ChevronDown
+                className={`h-3.5 w-3.5 text-muted-foreground transition-transform ${menu === "user" ? "rotate-180" : ""}`}
+              />
             </button>
             {menu === "user" && (
               <MenuPanel
@@ -259,10 +271,12 @@ export function TopBar() {
               <Link
                 key={w.to}
                 to={w.to}
+                data-wall-active={active || undefined}
+                aria-current={active ? "page" : undefined}
                 className={`whitespace-nowrap border-b-2 px-3 py-2.5 text-[12.5px] font-medium transition-colors ${
                   active
-                    ? "border-primary text-foreground"
-                    : "border-transparent text-muted-foreground hover:text-foreground"
+                    ? "border-primary bg-surface-2/60 text-foreground"
+                    : "border-transparent text-muted-foreground hover:bg-surface-2/40 hover:text-foreground"
                 }`}
               >
                 {w.label}
@@ -340,18 +354,24 @@ function IconBtn({
   children,
   label,
   onClick,
+  active = false,
 }: {
   children: React.ReactNode;
   label: string;
   onClick?: () => void;
+  active?: boolean;
 }) {
   return (
     <button
       type="button"
       title={label}
       aria-label={label}
+      aria-haspopup="menu"
+      aria-expanded={active}
       onClick={onClick}
-      className="relative grid h-9 w-9 place-items-center rounded-md border border-transparent text-muted-foreground transition-colors hover:border-border hover:bg-surface-2 hover:text-foreground"
+      className={`relative grid h-9 w-9 place-items-center rounded-md border text-muted-foreground transition-colors hover:border-border hover:bg-surface-2 hover:text-foreground ${
+        active ? "border-border bg-surface-2 text-foreground" : "border-transparent"
+      }`}
     >
       {children}
     </button>
