@@ -1,5 +1,6 @@
 import type { ReactNode } from "react";
-import { ChevronRight, Filter, Plus, RefreshCw } from "lucide-react";
+import { ChevronRight, Filter, Inbox, Plus, RefreshCw } from "lucide-react";
+import { useToast } from "@/lib/toast";
 
 export function WallHeader({
   eyebrow,
