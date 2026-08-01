@@ -21,7 +21,7 @@ import { useShortcuts } from "@/lib/shortcuts";
 import { ExportMenu } from "@/components/boss/ExportMenu";
 import { fmtNumber } from "@/lib/export";
 import { FileCheck2, KeyRound, Paperclip, Plus, RefreshCw, ShieldAlert, ShieldCheck, UploadCloud, X } from "lucide-react";
-import { useApprovals, useDocuments, useMergedAudit } from "@/lib/approvals";
+import { useApprovals, useDocuments, useLocalLicenses, useMergedAudit } from "@/lib/approvals";
 import { ApprovalQueueButton, ApprovalQueuePanel } from "@/components/boss/ApprovalQueuePanel";
 
 export const Route = createFileRoute("/license")({
@@ -38,7 +38,9 @@ const TABS: { id: LicenseStatus | "all"; label: string }[] = [
 ];
 
 function LicenseWall() {
-  const { data: rows = [], isLoading, error, refetch, isFetching } = useLicenses();
+  const { data: serverRows = [], isLoading, error, refetch, isFetching } = useLicenses();
+  const localLicenses = useLocalLicenses();
+  const rows = useMemo(() => [...localLicenses, ...serverRows], [localLicenses, serverRows]);
   const canGenerate = useCan("license.generate");
   const canRevoke = useCan("license.revoke");
   const canReadFranchise = useCan("franchise.read");
@@ -57,7 +59,7 @@ function LicenseWall() {
   const [newOpen, setNewOpen] = useState(false);
   const [renewTarget, setRenewTarget] = useState<License | null>(null);
   const [queueOpen, setQueueOpen] = useState(false);
-  const { submit: submitApproval, registerDocuments } = useApprovals();
+  const { submit: submitApproval, registerDocuments, registerLicense } = useApprovals();
 
   useShortcuts([
     { combo: "shift+n", description: "Generate license", handler: () => canGenerate && setNewOpen(true) },
@@ -234,11 +236,19 @@ function LicenseWall() {
         open={newOpen}
         onClose={() => setNewOpen(false)}
         onSubmit={(d) => {
-          const targetId = `lic-${Date.now().toString(36)}`;
+          const created = registerLicense({
+            franchise: d.franchise,
+            plan: d.plan,
+            devicesMax: d.devicesMax,
+            domainsMax: d.domainsMax,
+            expiresAt: d.expiresAt,
+            kycVerified: !!d.kycVerified,
+            complianceCleared: d.complianceDocs.length > 0,
+          });
           registerDocuments({
             scope: "license",
-            targetId,
-            targetLabel: `${d.franchise} · ${d.plan}`,
+            targetId: created.id,
+            targetLabel: `${created.franchise} · ${created.key}`,
             franchise: d.franchise,
             status: d.kycVerified ? "verified" : "pending_review",
             action: "generated license with KYC + compliance docs",
@@ -319,7 +329,7 @@ function LicenseDetailPanel({
       title={license ? `${license.franchise} · ${license.key}` : ""}
       footer={
         <div className="flex items-center justify-end gap-2">
-          <Btn variant="ghost" onClick={onRenew}>Renew</Btn>
+          <Btn variant="ghost" data-testid="license-renew" onClick={onRenew}>Renew</Btn>
           <Btn variant="outline" disabled={!canRevoke} onClick={() => onAction("License suspended")}>Suspend</Btn>
           <Btn variant="destructive" disabled={!canRevoke} onClick={() => onAction("License revoked")}>Revoke</Btn>
         </div>
@@ -672,7 +682,7 @@ function DocUploader({
         {docs.length > 0 && (
           <ul className="mt-3 divide-y divide-border rounded-md border border-border bg-surface">
             {docs.map((d) => (
-              <li key={d.id} className="flex items-center gap-2 px-3 py-2 text-[12px]">
+              <li key={d.id} data-testid="attached-doc" className="flex items-center gap-2 px-3 py-2 text-[12px]">
                 <FileCheck2 className="h-3.5 w-3.5 text-[color:var(--color-success)]" />
                 <span className="truncate font-medium text-foreground">{d.name}</span>
                 <span className="rounded bg-surface-2 px-1.5 py-0.5 text-[10.5px] text-muted-foreground">{DOC_KIND_LABEL[d.kind]}</span>

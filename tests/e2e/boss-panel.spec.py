@@ -242,7 +242,8 @@ async def test_license_upload_rejects_invalid(context):
     }])
     await page.wait_for_timeout(200)
     unsupported = await page.locator('text=/unsupported type/i').count()
-    listed_bad = await page.locator(f'text={bad_names["invalid_mime"]}').count()
+    listed_bad = await page.locator(
+        f'[data-testid="attached-doc"]:has-text("{bad_names["invalid_mime"]}")').count()
     check("negative · invalid MIME rejected inline", unsupported > 0 and listed_bad == 0,
           f"unsupported={unsupported} listed={listed_bad}")
 
@@ -254,7 +255,8 @@ async def test_license_upload_rejects_invalid(context):
     }])
     await page.wait_for_timeout(300)
     exceeds = await page.locator('text=/exceeds 10 MB/i').count()
-    listed_over = await page.locator(f'text={bad_names["oversize"]}').count()
+    listed_over = await page.locator(
+        f'[data-testid="attached-doc"]:has-text("{bad_names["oversize"]}")').count()
     check("negative · oversize file rejected inline", exceeds > 0 and listed_over == 0,
           f"exceeds={exceeds} listed={listed_over}")
 
@@ -304,6 +306,19 @@ async def test_license_upload_rejects_invalid(context):
     await page.screenshot(path=str(SHOT / "negative_documents_wall.png"))
     await page.close()
 
+
+async def _spa_nav(page, path):
+    """Client-side navigation: a full page.goto() reloads and wipes in-memory
+    session state (documents/licenses registered before a backend exists)."""
+    # Close any open drawer/overlay so the top-bar link is clickable.
+    for _ in range(3):
+        if await page.locator('[role="dialog"]').count() == 0:
+            break
+        await page.keyboard.press("Escape")
+        await page.wait_for_timeout(200)
+    await page.locator(f'a[href="{path}"]').first.click()
+    await page.wait_for_url(f"**{path}")
+    await page.wait_for_timeout(500)
 
 
 async def _fill_license_form(page, franchise, expires, kyc_names, comp_names):
@@ -358,8 +373,7 @@ async def test_license_create_audit_and_docs(context):
     await page.screenshot(path=str(SHOT / "license_create_drawer.png"))
 
     # Documents wall must list every uploaded file with a link back
-    await page.goto(f"{BASE}/documents", wait_until="networkidle")
-    await page.wait_for_timeout(400)
+    await _spa_nav(page, "/documents")
     body = await page.locator("body").inner_text()
     for name in kyc + comp:
         check(f"documents wall lists {name}", name in body)
@@ -389,9 +403,12 @@ async def test_license_renew_audit_and_docs(context):
     await page.wait_for_timeout(300)
     # Open Renew panel from the drawer
     try:
-        await page.get_by_role("button", name=re.compile(r"^Renew$")).first.click(timeout=3000)
-    except Exception:
-        check("license renew · Renew button clickable", False)
+        btn = page.locator('[data-testid="license-renew"]').first
+        await btn.wait_for(state="visible", timeout=8000)
+        await btn.scroll_into_view_if_needed()
+        await btn.click(timeout=8000)
+    except Exception as exc:
+        check("license renew · Renew button clickable", False, str(exc)[:120])
         await page.close(); return
     await page.wait_for_timeout(300)
 
@@ -418,8 +435,7 @@ async def test_license_renew_audit_and_docs(context):
     await page.screenshot(path=str(SHOT / "license_renew_drawer.png"))
 
     # Documents wall lists renewal files, linked to same license record
-    await page.goto(f"{BASE}/documents", wait_until="networkidle")
-    await page.wait_for_timeout(400)
+    await _spa_nav(page, "/documents")
     body = await page.locator("body").inner_text()
     for n in renew_files:
         check(f"documents wall lists renewal file {n}", n in body)

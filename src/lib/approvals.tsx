@@ -6,7 +6,7 @@ import {
   useState,
   type ReactNode,
 } from "react";
-import type { AuditEntry } from "./data-hooks";
+import type { AuditEntry, License } from "./data-hooks";
 import { useSession } from "./session";
 
 // In-memory approval + document workflow. Wire submit/approve/reject and
@@ -68,14 +68,27 @@ type RegisterDocsInput = {
   }>;
 };
 
+export type NewLicenseInput = {
+  franchise: string;
+  plan: License["plan"];
+  devicesMax: number;
+  domainsMax: number;
+  expiresAt: string;
+  kycVerified: boolean;
+  complianceCleared: boolean;
+};
+
 type Ctx = {
   requests: ApprovalRequest[];
   audit: LocalAuditEntry[];
   documents: StoredDocument[];
+  /** Licenses issued in this session, before a backend is connected. */
+  licenses: License[];
   submit: (r: Omit<ApprovalRequest, "id" | "requestedBy" | "requestedAt" | "status">) => ApprovalRequest;
   approve: (id: string, note?: string) => void;
   reject: (id: string, note?: string) => void;
   registerDocuments: (input: RegisterDocsInput) => StoredDocument[];
+  registerLicense: (input: NewLicenseInput) => License;
 };
 
 const ApprovalsCtx = createContext<Ctx | null>(null);
@@ -95,6 +108,7 @@ export function ApprovalsProvider({ children }: { children: ReactNode }) {
   const [requests, setRequests] = useState<ApprovalRequest[]>([]);
   const [audit, setAudit] = useState<LocalAuditEntry[]>([]);
   const [documents, setDocuments] = useState<StoredDocument[]>([]);
+  const [licenses, setLicenses] = useState<License[]>([]);
 
   const appendAudit = useCallback(
     (entries: LocalAuditEntry[]) => setAudit((cur) => [...entries, ...cur]),
@@ -173,6 +187,16 @@ export function ApprovalsProvider({ children }: { children: ReactNode }) {
                 : d,
             ),
           );
+          const nextExpiry = req.payload?.["expiresAt"];
+          if (typeof nextExpiry === "string" && nextExpiry) {
+            setLicenses((cur) =>
+              cur.map((l) =>
+                req.targetIds.includes(l.id)
+                  ? { ...l, expiresAt: nextExpiry, status: "active" as const }
+                  : l,
+              ),
+            );
+          }
         }
         return cur.map((r) => (r.id === id ? updated : r));
       });
@@ -212,17 +236,57 @@ export function ApprovalsProvider({ children }: { children: ReactNode }) {
     [name, appendAudit],
   );
 
+  const registerLicense: Ctx["registerLicense"] = useCallback(
+    (input) => {
+      const at = nowIso();
+      const seq = uid().slice(-6).toUpperCase();
+      const license: License = {
+        id: `lic-${uid()}`,
+        key: `SV-${input.plan.slice(0, 3).toUpperCase()}-${seq}`,
+        franchiseId: `fr-${uid().slice(0, 6)}`,
+        franchise: input.franchise,
+        plan: input.plan,
+        devices: 0,
+        devicesMax: input.devicesMax,
+        domains: 0,
+        domainsMax: input.domainsMax,
+        issuedAt: at.slice(0, 10),
+        expiresAt: input.expiresAt,
+        status: input.kycVerified && input.complianceCleared ? "active" : "pending",
+        kycVerified: input.kycVerified,
+        complianceCleared: input.complianceCleared,
+      };
+      setLicenses((cur) => [license, ...cur]);
+      appendAudit([
+        {
+          id: uid(),
+          at,
+          actor: name,
+          action: "generated license",
+          target: license.id,
+          meta: `${license.key} · ${license.franchise} · ${license.plan}`,
+          scope: "license",
+          targetId: license.id,
+        },
+      ]);
+      return license;
+    },
+    [name, appendAudit],
+  );
+
   const value = useMemo<Ctx>(
     () => ({
       requests,
       audit,
       documents,
+      licenses,
       submit,
       approve: (id, note) => decide(id, "approved", note),
       reject: (id, note) => decide(id, "rejected", note),
       registerDocuments,
+      registerLicense,
     }),
-    [requests, audit, documents, submit, decide, registerDocuments],
+    [requests, audit, documents, licenses, submit, decide, registerDocuments, registerLicense],
   );
 
   return <ApprovalsCtx.Provider value={value}>{children}</ApprovalsCtx.Provider>;
@@ -276,6 +340,12 @@ export function useDocuments(filter?: { scope?: string; targetId?: string; categ
         (!filter.category || d.category === filter.category),
     );
   }, [documents, filter]);
+}
+
+/** Licenses issued during this session (pre-backend). */
+export function useLocalLicenses(): License[] {
+  const { licenses } = useApprovals();
+  return licenses;
 }
 
 export const APPROVAL_KIND_LABEL = KIND_LABEL;
