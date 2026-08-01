@@ -426,8 +426,7 @@ async def test_license_renew_audit_and_docs(context):
     await page.screenshot(path=str(SHOT / "license_renew_drawer.png"))
 
     # Documents wall lists renewal files, linked to same license record
-    await page.goto(f"{BASE}/documents", wait_until="networkidle")
-    await page.wait_for_timeout(400)
+    await _spa_nav(page, "/documents")
     body = await page.locator("body").inner_text()
     for n in renew_files:
         check(f"documents wall lists renewal file {n}", n in body)
