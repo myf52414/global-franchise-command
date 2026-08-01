@@ -307,6 +307,13 @@ async def test_license_upload_rejects_invalid(context):
     await page.close()
 
 
+async def _spa_nav(page, path):
+    """Client-side navigation: a full page.goto() reloads and wipes in-memory
+    session state (documents/licenses registered before a backend exists)."""
+    await page.locator(f'a[href="{path}"]').first.click()
+    await page.wait_for_url(f"**{path}")
+    await page.wait_for_timeout(500)
+
 
 async def _fill_license_form(page, franchise, expires, kyc_names, comp_names):
     await page.get_by_role("button", name=re.compile("Generate License")).first.click()
