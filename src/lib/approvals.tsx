@@ -342,4 +342,10 @@ export function useDocuments(filter?: { scope?: string; targetId?: string; categ
   }, [documents, filter]);
 }
 
+/** Licenses issued during this session (pre-backend). */
+export function useLocalLicenses(): License[] {
+  const { licenses } = useApprovals();
+  return licenses;
+}
+
 export const APPROVAL_KIND_LABEL = KIND_LABEL;
