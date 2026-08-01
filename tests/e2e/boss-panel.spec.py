@@ -255,7 +255,8 @@ async def test_license_upload_rejects_invalid(context):
     }])
     await page.wait_for_timeout(300)
     exceeds = await page.locator('text=/exceeds 10 MB/i').count()
-    listed_over = await page.locator(f'text={bad_names["oversize"]}').count()
+    listed_over = await page.locator(
+        f'[data-testid="attached-doc"]:has-text("{bad_names["oversize"]}")').count()
     check("negative · oversize file rejected inline", exceeds > 0 and listed_over == 0,
           f"exceeds={exceeds} listed={listed_over}")
 
