@@ -310,6 +310,12 @@ async def test_license_upload_rejects_invalid(context):
 async def _spa_nav(page, path):
     """Client-side navigation: a full page.goto() reloads and wipes in-memory
     session state (documents/licenses registered before a backend exists)."""
+    # Close any open drawer/overlay so the top-bar link is clickable.
+    for _ in range(3):
+        if await page.locator('[role="dialog"]').count() == 0:
+            break
+        await page.keyboard.press("Escape")
+        await page.wait_for_timeout(200)
     await page.locator(f'a[href="{path}"]').first.click()
     await page.wait_for_url(f"**{path}")
     await page.wait_for_timeout(500)
