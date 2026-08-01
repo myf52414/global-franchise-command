@@ -108,6 +108,7 @@ export function ApprovalsProvider({ children }: { children: ReactNode }) {
   const [requests, setRequests] = useState<ApprovalRequest[]>([]);
   const [audit, setAudit] = useState<LocalAuditEntry[]>([]);
   const [documents, setDocuments] = useState<StoredDocument[]>([]);
+  const [licenses, setLicenses] = useState<License[]>([]);
 
   const appendAudit = useCallback(
     (entries: LocalAuditEntry[]) => setAudit((cur) => [...entries, ...cur]),
