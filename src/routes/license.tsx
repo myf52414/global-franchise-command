@@ -236,11 +236,19 @@ function LicenseWall() {
         open={newOpen}
         onClose={() => setNewOpen(false)}
         onSubmit={(d) => {
-          const targetId = `lic-${Date.now().toString(36)}`;
+          const created = registerLicense({
+            franchise: d.franchise,
+            plan: d.plan,
+            devicesMax: d.devicesMax,
+            domainsMax: d.domainsMax,
+            expiresAt: d.expiresAt,
+            kycVerified: !!d.kycVerified,
+            complianceCleared: d.complianceDocs.length > 0,
+          });
           registerDocuments({
             scope: "license",
-            targetId,
-            targetLabel: `${d.franchise} · ${d.plan}`,
+            targetId: created.id,
+            targetLabel: `${created.franchise} · ${created.key}`,
             franchise: d.franchise,
             status: d.kycVerified ? "verified" : "pending_review",
             action: "generated license with KYC + compliance docs",
