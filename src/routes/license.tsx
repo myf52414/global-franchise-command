@@ -38,7 +38,9 @@ const TABS: { id: LicenseStatus | "all"; label: string }[] = [
 ];
 
 function LicenseWall() {
-  const { data: rows = [], isLoading, error, refetch, isFetching } = useLicenses();
+  const { data: serverRows = [], isLoading, error, refetch, isFetching } = useLicenses();
+  const localLicenses = useLocalLicenses();
+  const rows = useMemo(() => [...localLicenses, ...serverRows], [localLicenses, serverRows]);
   const canGenerate = useCan("license.generate");
   const canRevoke = useCan("license.revoke");
   const canReadFranchise = useCan("franchise.read");
