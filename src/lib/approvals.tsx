@@ -236,17 +236,57 @@ export function ApprovalsProvider({ children }: { children: ReactNode }) {
     [name, appendAudit],
   );
 
+  const registerLicense: Ctx["registerLicense"] = useCallback(
+    (input) => {
+      const at = nowIso();
+      const seq = uid().slice(-6).toUpperCase();
+      const license: License = {
+        id: `lic-${uid()}`,
+        key: `SV-${input.plan.slice(0, 3).toUpperCase()}-${seq}`,
+        franchiseId: `fr-${uid().slice(0, 6)}`,
+        franchise: input.franchise,
+        plan: input.plan,
+        devices: 0,
+        devicesMax: input.devicesMax,
+        domains: 0,
+        domainsMax: input.domainsMax,
+        issuedAt: at.slice(0, 10),
+        expiresAt: input.expiresAt,
+        status: input.kycVerified && input.complianceCleared ? "active" : "pending",
+        kycVerified: input.kycVerified,
+        complianceCleared: input.complianceCleared,
+      };
+      setLicenses((cur) => [license, ...cur]);
+      appendAudit([
+        {
+          id: uid(),
+          at,
+          actor: name,
+          action: "generated license",
+          target: license.id,
+          meta: `${license.key} · ${license.franchise} · ${license.plan}`,
+          scope: "license",
+          targetId: license.id,
+        },
+      ]);
+      return license;
+    },
+    [name, appendAudit],
+  );
+
   const value = useMemo<Ctx>(
     () => ({
       requests,
       audit,
       documents,
+      licenses,
       submit,
       approve: (id, note) => decide(id, "approved", note),
       reject: (id, note) => decide(id, "rejected", note),
       registerDocuments,
+      registerLicense,
     }),
-    [requests, audit, documents, submit, decide, registerDocuments],
+    [requests, audit, documents, licenses, submit, decide, registerDocuments, registerLicense],
   );
 
   return <ApprovalsCtx.Provider value={value}>{children}</ApprovalsCtx.Provider>;
