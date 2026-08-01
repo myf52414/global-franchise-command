@@ -6,7 +6,7 @@ import {
   useState,
   type ReactNode,
 } from "react";
-import type { AuditEntry } from "./data-hooks";
+import type { AuditEntry, License } from "./data-hooks";
 import { useSession } from "./session";
 
 // In-memory approval + document workflow. Wire submit/approve/reject and
