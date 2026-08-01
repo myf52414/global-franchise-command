@@ -68,14 +68,27 @@ type RegisterDocsInput = {
   }>;
 };
 
+export type NewLicenseInput = {
+  franchise: string;
+  plan: License["plan"];
+  devicesMax: number;
+  domainsMax: number;
+  expiresAt: string;
+  kycVerified: boolean;
+  complianceCleared: boolean;
+};
+
 type Ctx = {
   requests: ApprovalRequest[];
   audit: LocalAuditEntry[];
   documents: StoredDocument[];
+  /** Licenses issued in this session, before a backend is connected. */
+  licenses: License[];
   submit: (r: Omit<ApprovalRequest, "id" | "requestedBy" | "requestedAt" | "status">) => ApprovalRequest;
   approve: (id: string, note?: string) => void;
   reject: (id: string, note?: string) => void;
   registerDocuments: (input: RegisterDocsInput) => StoredDocument[];
+  registerLicense: (input: NewLicenseInput) => License;
 };
 
 const ApprovalsCtx = createContext<Ctx | null>(null);
