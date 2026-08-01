@@ -187,6 +187,16 @@ export function ApprovalsProvider({ children }: { children: ReactNode }) {
                 : d,
             ),
           );
+          const nextExpiry = req.payload?.["expiresAt"];
+          if (typeof nextExpiry === "string" && nextExpiry) {
+            setLicenses((cur) =>
+              cur.map((l) =>
+                req.targetIds.includes(l.id)
+                  ? { ...l, expiresAt: nextExpiry, status: "active" as const }
+                  : l,
+              ),
+            );
+          }
         }
         return cur.map((r) => (r.id === id ? updated : r));
       });
