@@ -329,7 +329,7 @@ function LicenseDetailPanel({
       title={license ? `${license.franchise} · ${license.key}` : ""}
       footer={
         <div className="flex items-center justify-end gap-2">
-          <Btn variant="ghost" onClick={onRenew}>Renew</Btn>
+          <Btn variant="ghost" data-testid="license-renew" onClick={onRenew}>Renew</Btn>
           <Btn variant="outline" disabled={!canRevoke} onClick={() => onAction("License suspended")}>Suspend</Btn>
           <Btn variant="destructive" disabled={!canRevoke} onClick={() => onAction("License revoked")}>Revoke</Btn>
         </div>
