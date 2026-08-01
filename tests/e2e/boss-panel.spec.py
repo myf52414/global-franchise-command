@@ -397,7 +397,7 @@ async def test_license_renew_audit_and_docs(context):
     await page.wait_for_timeout(300)
     # Open Renew panel from the drawer
     try:
-        await page.get_by_role("button", name=re.compile(r"^Renew$")).first.click(timeout=3000)
+        await page.locator('[data-testid="license-renew"]').first.click(timeout=3000)
     except Exception:
         check("license renew · Renew button clickable", False)
         await page.close(); return
