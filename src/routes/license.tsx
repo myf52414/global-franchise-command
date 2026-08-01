@@ -682,7 +682,7 @@ function DocUploader({
         {docs.length > 0 && (
           <ul className="mt-3 divide-y divide-border rounded-md border border-border bg-surface">
             {docs.map((d) => (
-              <li key={d.id} className="flex items-center gap-2 px-3 py-2 text-[12px]">
+              <li key={d.id} data-testid="attached-doc" className="flex items-center gap-2 px-3 py-2 text-[12px]">
                 <FileCheck2 className="h-3.5 w-3.5 text-[color:var(--color-success)]" />
                 <span className="truncate font-medium text-foreground">{d.name}</span>
                 <span className="rounded bg-surface-2 px-1.5 py-0.5 text-[10.5px] text-muted-foreground">{DOC_KIND_LABEL[d.kind]}</span>
