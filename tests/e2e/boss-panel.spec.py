@@ -242,7 +242,8 @@ async def test_license_upload_rejects_invalid(context):
     }])
     await page.wait_for_timeout(200)
     unsupported = await page.locator('text=/unsupported type/i').count()
-    listed_bad = await page.locator(f'text={bad_names["invalid_mime"]}').count()
+    listed_bad = await page.locator(
+        f'[data-testid="attached-doc"]:has-text("{bad_names["invalid_mime"]}")').count()
     check("negative · invalid MIME rejected inline", unsupported > 0 and listed_bad == 0,
           f"unsupported={unsupported} listed={listed_bad}")
 
