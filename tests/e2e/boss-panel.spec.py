@@ -360,8 +360,7 @@ async def test_license_create_audit_and_docs(context):
     await page.screenshot(path=str(SHOT / "license_create_drawer.png"))
 
     # Documents wall must list every uploaded file with a link back
-    await page.goto(f"{BASE}/documents", wait_until="networkidle")
-    await page.wait_for_timeout(400)
+    await _spa_nav(page, "/documents")
     body = await page.locator("body").inner_text()
     for name in kyc + comp:
         check(f"documents wall lists {name}", name in body)
