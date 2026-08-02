@@ -247,28 +247,38 @@ export function DataTable({
 export function Btn({
   children,
   variant = "outline",
+  loading = false,
   ...rest
 }: React.ButtonHTMLAttributes<HTMLButtonElement> & {
   variant?: "primary" | "outline" | "ghost" | "destructive";
+  loading?: boolean;
 }) {
   const base =
-    "inline-flex items-center gap-1.5 rounded-md px-2.5 h-8 text-[12.5px] font-medium transition-colors disabled:opacity-50";
+    "inline-flex items-center justify-center gap-1.5 rounded-md px-2.5 h-9 min-w-9 text-[12.5px] font-medium transition-all duration-150 select-none active:translate-y-px focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[color:var(--color-ring)] focus-visible:ring-offset-1 focus-visible:ring-offset-[color:var(--color-surface)] disabled:pointer-events-none disabled:opacity-50";
   const styles = {
     primary:
-      "bg-primary text-primary-foreground hover:bg-primary/90",
+      "bg-primary text-primary-foreground shadow-sm hover:bg-primary/90",
     outline:
-      "border border-border bg-surface text-foreground hover:bg-surface-2",
+      "border border-border bg-surface text-foreground hover:border-border-strong hover:bg-surface-2",
     ghost:
       "text-muted-foreground hover:text-foreground hover:bg-surface-2",
     destructive:
-      "bg-destructive text-destructive-foreground hover:bg-destructive/90",
+      "bg-destructive text-destructive-foreground shadow-sm hover:bg-destructive/90",
   }[variant];
   return (
-    <button {...rest} className={`${base} ${styles} ${rest.className ?? ""}`}>
+    <button
+      type={rest.type ?? "button"}
+      {...rest}
+      disabled={rest.disabled || loading}
+      aria-busy={loading || undefined}
+      className={`${base} ${styles} ${rest.className ?? ""}`}
+    >
+      {loading && <Loader2 className="h-3.5 w-3.5 animate-spin" />}
       {children}
     </button>
   );
 }
+
 
 export function PillRow({ items }: { items: string[] }) {
   return (
