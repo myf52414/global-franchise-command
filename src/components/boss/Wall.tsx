@@ -139,35 +139,37 @@ export function Stat({
   value,
   hint,
   tone = "neutral",
+  icon,
+  trend,
+  help,
+  loading,
+  onClick,
 }: {
   label: string;
   value?: ReactNode;
   hint?: string;
   tone?: "neutral" | "success" | "warning" | "destructive" | "info";
+  icon?: ReactNode;
+  trend?: { pct: number; label?: string } | null;
+  help?: string;
+  loading?: boolean;
+  onClick?: () => void;
 }) {
-  const toneClass = {
-    neutral: "text-foreground",
-    success: "text-[color:var(--color-success)]",
-    warning: "text-[color:var(--color-warning)]",
-    destructive: "text-destructive",
-    info: "text-[color:var(--color-info)]",
-  }[tone];
   return (
-    <Card>
-      <div className="text-[11px] font-medium uppercase tracking-wider text-muted-foreground">
-        {label}
-      </div>
-      <div className={`mt-2 text-[22px] font-semibold leading-none tracking-tight ${toneClass}`}>
-        {value ?? <span className="text-muted-foreground/60">—</span>}
-      </div>
-      {(hint || value === undefined) && (
-        <div className="mt-2 text-[11px] text-muted-foreground">
-          {hint ?? "Awaiting data"}
-        </div>
-      )}
-    </Card>
+    <KpiCard
+      label={label}
+      value={value}
+      hint={hint}
+      tone={tone}
+      icon={icon}
+      trend={trend}
+      help={help}
+      loading={loading}
+      onClick={onClick}
+    />
   );
 }
+
 
 export function EmptyState({
   title,
