@@ -94,8 +94,16 @@ export function EnterpriseTable<T extends { id: string }>({
     return rows.map((r) => (
       <tr
         key={r.id}
+        tabIndex={onRowClick ? 0 : undefined}
+        onKeyDown={(e) => {
+          if (!onRowClick) return;
+          if (e.key === "Enter" || e.key === " ") { e.preventDefault(); onRowClick(r); }
+        }}
         onClick={() => onRowClick?.(r)}
-        className="border-t border-border transition-colors hover:bg-surface-2"
+        aria-selected={selected?.has(r.id) ?? undefined}
+        className={`border-t border-border transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-[color:var(--color-ring)] ${
+          selected?.has(r.id) ? "bg-accent/40" : "hover:bg-surface-2"
+        } ${onRowClick ? "cursor-pointer" : ""}`}
       >
         {selectable && (
           <td className="w-9 px-4 py-2.5" onClick={(e) => e.stopPropagation()}>
@@ -103,7 +111,8 @@ export function EnterpriseTable<T extends { id: string }>({
               type="checkbox"
               checked={selected?.has(r.id) ?? false}
               onChange={() => onToggle?.(r.id)}
-              className="h-3.5 w-3.5 accent-[color:var(--color-primary)]"
+              aria-label={`Select row ${r.id}`}
+              className="h-3.5 w-3.5 accent-[color:var(--color-primary)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[color:var(--color-ring)]"
             />
           </td>
         )}
@@ -114,6 +123,7 @@ export function EnterpriseTable<T extends { id: string }>({
         ))}
       </tr>
     ));
+
   };
 
   return (
