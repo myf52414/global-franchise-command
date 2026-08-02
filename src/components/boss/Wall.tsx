@@ -1,6 +1,8 @@
 import type { ReactNode } from "react";
 import { ChevronRight, Filter, Inbox, Plus, RefreshCw } from "lucide-react";
 import { useToast } from "@/lib/toast";
+import { KpiCard } from "./KpiCard";
+
 
 export function WallHeader({
   eyebrow,
