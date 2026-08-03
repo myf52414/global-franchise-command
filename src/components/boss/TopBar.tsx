@@ -16,11 +16,13 @@ import {
   ShieldCheck,
   Upload,
   User2,
+  Menu,
 } from "lucide-react";
 
 type MenuKey = "import" | "export" | "notifications" | "user" | null;
 
-export function TopBar() {
+export function TopBar({ onOpenMenu }: { onOpenMenu?: () => void }) {
+
   const [query, setQuery] = useState("");
   const scrollerRef = useRef<HTMLDivElement>(null);
   const [paletteOpen, setPaletteOpen] = useState(false);
