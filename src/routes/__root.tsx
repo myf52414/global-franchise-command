@@ -12,9 +12,11 @@ import { useEffect, type ReactNode } from "react";
 import appCss from "../styles.css?url";
 import { reportLovableError } from "../lib/lovable-error-reporting";
 import { TopBar } from "../components/boss/TopBar";
+import { AppSidebar, useSidebarState } from "../components/boss/AppSidebar";
 import { SessionProvider } from "../lib/session";
 import { ToastProvider } from "../lib/toast";
 import { ApprovalsProvider } from "../lib/approvals";
+
 
 function NotFoundComponent() {
   return (
