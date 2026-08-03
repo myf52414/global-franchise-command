@@ -81,26 +81,28 @@ export function TopBar({ onOpenMenu }: { onOpenMenu?: () => void }) {
   );
 
   return (
-    <header className="sticky top-0 z-40 border-b border-border bg-surface/95 backdrop-blur">
-      <div className="flex h-14 items-center gap-4 px-6">
-        <Link to="/dashboard" className="flex items-center gap-2">
-          <div className="grid h-7 w-7 place-items-center rounded-md bg-primary text-primary-foreground text-[11px] font-bold tracking-tight">
+    <header className="sticky top-0 z-40 border-b border-border bg-background/80 backdrop-blur-xl">
+      <div className="flex h-16 items-center gap-3 px-4 lg:px-6">
+        <button
+          className="grid h-9 w-9 shrink-0 place-items-center rounded-lg border border-border text-muted-foreground transition-colors hover:text-foreground lg:hidden"
+          onClick={onOpenMenu}
+          aria-label="Open menu"
+        >
+          <Menu className="h-4 w-4" />
+        </button>
+
+        <Link to="/dashboard" className="flex shrink-0 items-center gap-2 lg:hidden">
+          <span className="grid h-9 w-9 place-items-center rounded-xl bg-gradient-to-br from-primary to-primary-glow font-bold text-primary-foreground">
             SV
-          </div>
-          <div className="leading-tight">
-            <div className="text-[13px] font-semibold text-foreground">Software Vala</div>
-            <div className="text-[10px] uppercase tracking-[0.14em] text-muted-foreground">
-              Boss Panel · Franchise Manager
-            </div>
-          </div>
+          </span>
         </Link>
 
-        <div className="ml-6 hidden flex-1 items-center md:flex">
+        <div className="hidden flex-1 items-center md:flex">
           <button
             onClick={() => setPaletteOpen(true)}
-            className="flex h-9 w-full max-w-xl items-center gap-2 rounded-md border border-border bg-surface-2 px-3 text-left text-sm text-muted-foreground hover:border-border-strong"
+            className="flex h-10 w-full max-w-xl items-center gap-2 rounded-full border border-border bg-surface px-4 text-left text-sm text-muted-foreground transition-colors hover:border-primary/50"
           >
-            <Search className="h-4 w-4" />
+            <Search className="h-4 w-4 shrink-0" />
             <span className="flex-1 truncate">
               Search franchises, applications, licenses, users…
             </span>
@@ -108,6 +110,7 @@ export function TopBar({ onOpenMenu }: { onOpenMenu?: () => void }) {
             <span className="kbd">K</span>
           </button>
         </div>
+
 
         <div ref={menuRef} className="ml-auto flex items-center gap-1.5">
           {/* Import */}
