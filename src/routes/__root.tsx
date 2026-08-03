@@ -138,12 +138,22 @@ function RootComponent() {
 }
 
 function BossShell() {
+  const { collapsed, toggleCollapsed, mobileOpen, setMobileOpen } = useSidebarState();
   return (
-    <div className="flex min-h-screen flex-col bg-background">
-      <TopBar />
-      <main className="flex-1">
-        <Outlet />
-      </main>
+    <div className="flex min-h-screen w-full">
+      <AppSidebar
+        collapsed={collapsed}
+        onToggleCollapsed={toggleCollapsed}
+        mobileOpen={mobileOpen}
+        onCloseMobile={() => setMobileOpen(false)}
+      />
+      <div className="flex min-w-0 flex-1 flex-col">
+        <TopBar onOpenMenu={() => setMobileOpen(true)} />
+        <main className="min-w-0 flex-1">
+          <Outlet />
+        </main>
+      </div>
     </div>
   );
+
 }
