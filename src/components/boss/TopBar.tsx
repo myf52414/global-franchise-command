@@ -264,32 +264,8 @@ export function TopBar({ onOpenMenu }: { onOpenMenu?: () => void }) {
         </div>
       </div>
 
-      {/* Wall tabs */}
-      <nav className="relative border-t border-border">
-        <div
-          ref={scrollerRef}
-          className="flex overflow-x-auto px-4 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden"
-        >
-          {WALLS.map((w) => {
-            const active = currentPath === w.to;
-            return (
-              <Link
-                key={w.to}
-                to={w.to}
-                data-wall-active={active || undefined}
-                aria-current={active ? "page" : undefined}
-                className={`whitespace-nowrap border-b-2 px-3 py-2.5 text-[12.5px] font-medium transition-colors ${
-                  active
-                    ? "border-primary bg-surface-2/60 text-foreground"
-                    : "border-transparent text-muted-foreground hover:bg-surface-2/40 hover:text-foreground"
-                }`}
-              >
-                {w.label}
-              </Link>
-            );
-          })}
-        </div>
-      </nav>
+
+
 
       {paletteOpen && (
         <div
