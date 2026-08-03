@@ -24,7 +24,7 @@ type MenuKey = "import" | "export" | "notifications" | "user" | null;
 export function TopBar({ onOpenMenu }: { onOpenMenu?: () => void }) {
 
   const [query, setQuery] = useState("");
-  const scrollerRef = useRef<HTMLDivElement>(null);
+  
   const [paletteOpen, setPaletteOpen] = useState(false);
   const [menu, setMenu] = useState<MenuKey>(null);
   const menuRef = useRef<HTMLDivElement>(null);
