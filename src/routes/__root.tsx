@@ -12,9 +12,11 @@ import { useEffect, type ReactNode } from "react";
 import appCss from "../styles.css?url";
 import { reportLovableError } from "../lib/lovable-error-reporting";
 import { TopBar } from "../components/boss/TopBar";
+import { AppSidebar, useSidebarState } from "../components/boss/AppSidebar";
 import { SessionProvider } from "../lib/session";
 import { ToastProvider } from "../lib/toast";
 import { ApprovalsProvider } from "../lib/approvals";
+
 
 function NotFoundComponent() {
   return (
@@ -81,21 +83,23 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
     meta: [
       { charSet: "utf-8" },
       { name: "viewport", content: "width=device-width, initial-scale=1" },
-      { title: "Lovable App" },
-      { name: "description", content: "Lovable Generated Project" },
-      { name: "author", content: "Lovable" },
-      { property: "og:title", content: "Lovable App" },
-      { property: "og:description", content: "Lovable Generated Project" },
+      { title: "Franchise Manager — Software Vala Boss Panel" },
+      { name: "description", content: "Control panel for franchise applications, licenses, revenue, commission and compliance." },
+      { property: "og:title", content: "Franchise Manager — Software Vala Boss Panel" },
+      { property: "og:description", content: "Control panel for franchise applications, licenses, revenue, commission and compliance." },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary" },
-      { name: "twitter:site", content: "@Lovable" },
     ],
     links: [
+      { rel: "stylesheet", href: appCss },
+      { rel: "preconnect", href: "https://fonts.googleapis.com" },
+      { rel: "preconnect", href: "https://fonts.gstatic.com", crossOrigin: "anonymous" },
       {
         rel: "stylesheet",
-        href: appCss,
+        href: "https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap",
       },
     ],
+
   }),
   shellComponent: RootShell,
   component: RootComponent,
@@ -134,12 +138,22 @@ function RootComponent() {
 }
 
 function BossShell() {
+  const { collapsed, toggleCollapsed, mobileOpen, setMobileOpen } = useSidebarState();
   return (
-    <div className="flex min-h-screen flex-col bg-background">
-      <TopBar />
-      <main className="flex-1">
-        <Outlet />
-      </main>
+    <div className="flex min-h-screen w-full">
+      <AppSidebar
+        collapsed={collapsed}
+        onToggleCollapsed={toggleCollapsed}
+        mobileOpen={mobileOpen}
+        onCloseMobile={() => setMobileOpen(false)}
+      />
+      <div className="flex min-w-0 flex-1 flex-col">
+        <TopBar onOpenMenu={() => setMobileOpen(true)} />
+        <main className="min-w-0 flex-1">
+          <Outlet />
+        </main>
+      </div>
     </div>
   );
+
 }

@@ -16,13 +16,15 @@ import {
   ShieldCheck,
   Upload,
   User2,
+  Menu,
 } from "lucide-react";
 
 type MenuKey = "import" | "export" | "notifications" | "user" | null;
 
-export function TopBar() {
+export function TopBar({ onOpenMenu }: { onOpenMenu?: () => void }) {
+
   const [query, setQuery] = useState("");
-  const scrollerRef = useRef<HTMLDivElement>(null);
+  
   const [paletteOpen, setPaletteOpen] = useState(false);
   const [menu, setMenu] = useState<MenuKey>(null);
   const menuRef = useRef<HTMLDivElement>(null);
@@ -59,13 +61,8 @@ export function TopBar() {
 
   const toggle = (k: MenuKey) => setMenu((m) => (m === k ? null : k));
 
-  // Auto-scroll the active wall tab into view when the route changes.
-  useEffect(() => {
-    const el = scrollerRef.current?.querySelector<HTMLElement>(
-      `[data-wall-active="true"]`,
-    );
-    el?.scrollIntoView({ block: "nearest", inline: "center", behavior: "smooth" });
-  }, [currentPath]);
+
+
 
   const notifications = useMemo(
     () =>
@@ -79,26 +76,28 @@ export function TopBar() {
   );
 
   return (
-    <header className="sticky top-0 z-40 border-b border-border bg-surface/95 backdrop-blur">
-      <div className="flex h-14 items-center gap-4 px-6">
-        <Link to="/dashboard" className="flex items-center gap-2">
-          <div className="grid h-7 w-7 place-items-center rounded-md bg-primary text-primary-foreground text-[11px] font-bold tracking-tight">
+    <header className="sticky top-0 z-40 border-b border-border bg-background/80 backdrop-blur-xl">
+      <div className="flex h-16 items-center gap-3 px-4 lg:px-6">
+        <button
+          className="grid h-9 w-9 shrink-0 place-items-center rounded-lg border border-border text-muted-foreground transition-colors hover:text-foreground lg:hidden"
+          onClick={onOpenMenu}
+          aria-label="Open menu"
+        >
+          <Menu className="h-4 w-4" />
+        </button>
+
+        <Link to="/dashboard" className="flex shrink-0 items-center gap-2 lg:hidden">
+          <span className="grid h-9 w-9 place-items-center rounded-xl bg-gradient-to-br from-primary to-primary-glow font-bold text-primary-foreground">
             SV
-          </div>
-          <div className="leading-tight">
-            <div className="text-[13px] font-semibold text-foreground">Software Vala</div>
-            <div className="text-[10px] uppercase tracking-[0.14em] text-muted-foreground">
-              Boss Panel · Franchise Manager
-            </div>
-          </div>
+          </span>
         </Link>
 
-        <div className="ml-6 hidden flex-1 items-center md:flex">
+        <div className="hidden flex-1 items-center md:flex">
           <button
             onClick={() => setPaletteOpen(true)}
-            className="flex h-9 w-full max-w-xl items-center gap-2 rounded-md border border-border bg-surface-2 px-3 text-left text-sm text-muted-foreground hover:border-border-strong"
+            className="flex h-10 w-full max-w-xl items-center gap-2 rounded-full border border-border bg-surface px-4 text-left text-sm text-muted-foreground transition-colors hover:border-primary/50"
           >
-            <Search className="h-4 w-4" />
+            <Search className="h-4 w-4 shrink-0" />
             <span className="flex-1 truncate">
               Search franchises, applications, licenses, users…
             </span>
@@ -106,6 +105,7 @@ export function TopBar() {
             <span className="kbd">K</span>
           </button>
         </div>
+
 
         <div ref={menuRef} className="ml-auto flex items-center gap-1.5">
           {/* Import */}
@@ -259,32 +259,8 @@ export function TopBar() {
         </div>
       </div>
 
-      {/* Wall tabs */}
-      <nav className="relative border-t border-border">
-        <div
-          ref={scrollerRef}
-          className="flex overflow-x-auto px-4 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden"
-        >
-          {WALLS.map((w) => {
-            const active = currentPath === w.to;
-            return (
-              <Link
-                key={w.to}
-                to={w.to}
-                data-wall-active={active || undefined}
-                aria-current={active ? "page" : undefined}
-                className={`whitespace-nowrap border-b-2 px-3 py-2.5 text-[12.5px] font-medium transition-colors ${
-                  active
-                    ? "border-primary bg-surface-2/60 text-foreground"
-                    : "border-transparent text-muted-foreground hover:bg-surface-2/40 hover:text-foreground"
-                }`}
-              >
-                {w.label}
-              </Link>
-            );
-          })}
-        </div>
-      </nav>
+
+
 
       {paletteOpen && (
         <div
