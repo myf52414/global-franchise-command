@@ -3,7 +3,7 @@ import { Link } from "@tanstack/react-router";
 
 export function BackendBanner() {
   return (
-    <div className="mx-auto mt-4 flex w-[calc(100%-2rem)] max-w-[1536px] items-start gap-3 rounded-2xl border border-[color:color-mix(in_oklab,var(--color-info)_30%,transparent)] bg-[color:color-mix(in_oklab,var(--color-info)_8%,transparent)] px-4 py-3 text-[12.5px] text-foreground sm:w-[calc(100%-3rem)] lg:w-[calc(100%-4rem)]">
+    <div className="mx-auto mt-4 grid w-[calc(100%-2rem)] max-w-[1536px] grid-cols-[auto_minmax(0,1fr)] items-start gap-3 rounded-2xl border border-[color:color-mix(in_oklab,var(--color-info)_30%,transparent)] bg-[color:color-mix(in_oklab,var(--color-info)_8%,transparent)] px-4 py-3 text-[12.5px] text-foreground sm:w-[calc(100%-3rem)] sm:grid-cols-[auto_minmax(0,1fr)_auto] lg:w-[calc(100%-4rem)]">
       <div className="mt-0.5 grid h-7 w-7 place-items-center rounded-md bg-[color:color-mix(in_oklab,var(--color-info)_14%,transparent)] text-[color:var(--color-info)]">
         <Database className="h-3.5 w-3.5" />
       </div>
@@ -18,7 +18,7 @@ export function BackendBanner() {
       </div>
       <Link
         to="/settings"
-        className="shrink-0 rounded-md border border-border bg-surface px-2.5 py-1 text-[11.5px] font-medium text-foreground hover:bg-surface-2"
+        className="col-start-2 w-fit shrink-0 rounded-full border border-border bg-surface px-3 py-1.5 text-[11.5px] font-medium text-foreground hover:bg-surface-2 sm:col-start-3 sm:row-start-1"
       >
         Open Settings
       </Link>
