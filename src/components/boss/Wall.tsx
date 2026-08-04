@@ -41,7 +41,7 @@ export function WallHeader({
               Live workspace
             </div>
           </div>
-          <div className="flex flex-wrap items-center gap-2 lg:justify-end">
+          <div className="flex flex-wrap items-center gap-2 lg:justify-end [&>button]:border-primary-foreground/20 [&>button]:bg-primary-foreground/10 [&>button]:text-primary-foreground [&>button]:shadow-none [&>button:hover]:bg-primary-foreground/20 [&>button:last-child]:border-primary-foreground [&>button:last-child]:bg-primary-foreground [&>button:last-child]:text-primary [&>button:last-child:hover]:bg-primary-foreground/90">
             {actions ?? <DefaultWallActions title={title} />}
           </div>
         </div>
