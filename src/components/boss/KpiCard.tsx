@@ -53,7 +53,7 @@ export function KpiCard({
   return (
     <Wrapper
       {...(onClick ? { type: "button" as const, onClick } : {})}
-      className={`group relative w-full overflow-hidden rounded-lg border border-border bg-card p-4 text-left transition-all duration-200 ${
+      className={`group relative w-full overflow-hidden rounded-2xl border border-border bg-card p-5 text-left shadow-[var(--shadow-card)] transition-all duration-200 ${
         onClick
           ? "hover:-translate-y-px hover:border-border-strong hover:shadow-md focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[color:var(--color-ring)]"
           : ""
