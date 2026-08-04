@@ -3,7 +3,7 @@ import { Link } from "@tanstack/react-router";
 
 export function BackendBanner() {
   return (
-    <div className="mx-6 mt-4 flex items-start gap-3 rounded-lg border border-[color:color-mix(in_oklab,var(--color-info)_30%,transparent)] bg-[color:color-mix(in_oklab,var(--color-info)_8%,transparent)] px-4 py-3 text-[12.5px] text-foreground">
+    <div className="mx-auto mt-4 flex w-[calc(100%-2rem)] max-w-[1536px] items-start gap-3 rounded-2xl border border-[color:color-mix(in_oklab,var(--color-info)_30%,transparent)] bg-[color:color-mix(in_oklab,var(--color-info)_8%,transparent)] px-4 py-3 text-[12.5px] text-foreground sm:w-[calc(100%-3rem)] lg:w-[calc(100%-4rem)]">
       <div className="mt-0.5 grid h-7 w-7 place-items-center rounded-md bg-[color:color-mix(in_oklab,var(--color-info)_14%,transparent)] text-[color:var(--color-info)]">
         <Database className="h-3.5 w-3.5" />
       </div>
