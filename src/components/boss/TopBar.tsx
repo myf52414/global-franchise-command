@@ -95,21 +95,20 @@ export function TopBar({ onOpenMenu }: { onOpenMenu?: () => void }) {
         <div className="hidden flex-1 items-center md:flex">
           <button
             onClick={() => setPaletteOpen(true)}
-            className="flex h-10 w-full max-w-xl items-center gap-2 rounded-full border border-border bg-surface px-4 text-left text-sm text-muted-foreground transition-colors hover:border-primary/50"
+            className="flex h-9 w-56 items-center gap-2 rounded-full border border-border bg-surface px-3 text-left text-sm text-muted-foreground transition-colors hover:border-primary/50 lg:w-72 2xl:w-96"
           >
             <Search className="h-4 w-4 shrink-0" />
             <span className="flex-1 truncate">
               Search franchises, applications, licenses, users…
             </span>
-            <span className="kbd">⌘</span>
-            <span className="kbd">K</span>
+            <span className="kbd hidden 2xl:inline-flex">⌘K</span>
           </button>
         </div>
 
 
         <div ref={menuRef} className="ml-auto flex items-center gap-1.5">
           {/* Import */}
-          <div className="relative">
+          <div className="relative hidden lg:block">
             <IconBtn label="Import Center" active={menu === "import"} onClick={() => toggle("import")}>
               <Upload className="h-4 w-4" />
             </IconBtn>
@@ -136,7 +135,7 @@ export function TopBar({ onOpenMenu }: { onOpenMenu?: () => void }) {
           </div>
 
           {/* Export */}
-          <div className="relative">
+          <div className="relative hidden lg:block">
             <IconBtn label="Export Center" active={menu === "export"} onClick={() => toggle("export")}>
               <Download className="h-4 w-4" />
             </IconBtn>
@@ -158,9 +157,9 @@ export function TopBar({ onOpenMenu }: { onOpenMenu?: () => void }) {
           </div>
 
           {/* Command palette */}
-          <IconBtn label="Command Palette (⌘K)" onClick={() => setPaletteOpen(true)}>
+          <div className="hidden lg:block"><IconBtn label="Command Palette (⌘K)" onClick={() => setPaletteOpen(true)}>
             <Command className="h-4 w-4" />
-          </IconBtn>
+          </IconBtn></div>
 
           {/* Notifications */}
           <div className="relative">
@@ -207,19 +206,18 @@ export function TopBar({ onOpenMenu }: { onOpenMenu?: () => void }) {
           <div className="relative">
             <button
               onClick={() => toggle("user")}
-              className="ml-2 flex h-9 items-center gap-2 rounded-md border border-border bg-surface-2 pl-1 pr-2 transition-colors hover:border-border-strong"
+              className="group ml-1 flex h-10 shrink-0 items-center gap-2.5 rounded-full border border-border bg-surface py-1 pl-1 pr-2 shadow-sm transition-all duration-200 hover:border-primary/40 sm:pr-3"
               aria-label="Account menu"
               aria-haspopup="menu"
               aria-expanded={menu === "user"}
             >
-              <div className="grid h-7 w-7 place-items-center rounded bg-primary/10 text-primary">
-                <User2 className="h-3.5 w-3.5" />
-              </div>
+              <span className="relative grid h-8 w-8 place-items-center rounded-full bg-gradient-to-br from-accent-pink via-primary to-primary-glow text-[11px] font-bold text-primary-foreground ring-1 ring-primary-foreground/10">
+                SV
+                <span className="absolute -bottom-0.5 -right-0.5 h-2.5 w-2.5 rounded-full bg-accent-emerald ring-2 ring-background" />
+              </span>
               <div className="hidden leading-tight sm:block">
-                <div className="text-[12px] font-medium text-foreground">{session.name}</div>
-                <div className="text-[10px] capitalize text-muted-foreground">
-                  Global · {session.role}
-                </div>
+                <div className="max-w-[120px] truncate text-[12px] font-semibold text-foreground">{session.name}</div>
+                <div className="mt-0.5 rounded-full bg-primary/15 px-1.5 py-0.5 text-[9px] font-semibold uppercase text-primary">{session.role}</div>
               </div>
               <ChevronDown
                 className={`h-3.5 w-3.5 text-muted-foreground transition-transform ${menu === "user" ? "rotate-180" : ""}`}
@@ -345,7 +343,7 @@ function IconBtn({
       aria-haspopup="menu"
       aria-expanded={active}
       onClick={onClick}
-      className={`relative grid h-9 w-9 place-items-center rounded-md border text-muted-foreground transition-colors hover:border-border hover:bg-surface-2 hover:text-foreground ${
+      className={`relative grid h-9 w-9 place-items-center rounded-full border text-muted-foreground transition-colors hover:border-border hover:bg-surface-2 hover:text-foreground ${
         active ? "border-border bg-surface-2 text-foreground" : "border-transparent"
       }`}
     >

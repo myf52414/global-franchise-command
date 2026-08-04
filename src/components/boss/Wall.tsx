@@ -1,5 +1,5 @@
 import type { ReactNode } from "react";
-import { ChevronRight, Filter, Inbox, Loader2, Plus, RefreshCw } from "lucide-react";
+import { Activity, ChevronRight, Filter, Inbox, Loader2, Plus, RefreshCw, Sparkles } from "lucide-react";
 import { useToast } from "@/lib/toast";
 import { KpiCard } from "./KpiCard";
 
@@ -16,27 +16,36 @@ export function WallHeader({
   actions?: ReactNode;
 }) {
   return (
-    <div className="relative flex flex-wrap items-end justify-between gap-4 overflow-hidden border-b border-border bg-surface bg-[radial-gradient(70%_140%_at_0%_0%,color-mix(in_oklab,var(--color-primary)_22%,transparent),transparent_70%),radial-gradient(50%_120%_at_100%_0%,color-mix(in_oklab,var(--color-accent-pink)_12%,transparent),transparent_70%)] px-6 py-6">
-      <div className="min-w-0">
-        {eyebrow && (
-          <div className="mb-1 flex items-center gap-1.5 text-[11px] font-medium uppercase tracking-[0.14em] text-muted-foreground">
-            <span>Boss Panel</span>
-            <ChevronRight className="h-3 w-3" />
-            <span>Franchise Manager</span>
-            <ChevronRight className="h-3 w-3" />
-            <span className="text-foreground">{eyebrow}</span>
+    <div className="mx-auto w-full max-w-[1600px] px-4 pt-6 sm:px-6 sm:pt-8 lg:px-8 lg:pt-10">
+      <section className="hero-surface relative overflow-hidden p-5 sm:p-7 lg:p-9">
+        <div className="pointer-events-none absolute -right-24 -top-24 h-72 w-72 rounded-full bg-primary-foreground/10 blur-3xl" />
+        <div className="pointer-events-none absolute -bottom-24 -left-10 h-64 w-64 rounded-full bg-accent-pink/40 blur-3xl" />
+        <div className="relative grid grid-cols-1 items-end gap-6 lg:grid-cols-[minmax(0,1fr)_auto]">
+          <div className="min-w-0">
+            <div className="inline-flex max-w-full items-center gap-2 rounded-full border border-primary-foreground/25 bg-primary-foreground/15 px-3 py-1 text-[11px] font-medium text-primary-foreground backdrop-blur-sm">
+              <Sparkles className="h-3.5 w-3.5 shrink-0" />
+              <span>Boss Panel</span>
+              <ChevronRight className="h-3 w-3 opacity-70" />
+              <span>Franchise Manager</span>
+              {eyebrow && <ChevronRight className="h-3 w-3 opacity-70" />}
+              {eyebrow && <span className="truncate">{eyebrow}</span>}
+            </div>
+            <h1 className="mt-4 text-2xl font-semibold leading-tight text-primary-foreground sm:text-3xl lg:text-[34px]">
+              {title}
+            </h1>
+            {description && (
+              <p className="mt-1.5 max-w-2xl text-sm text-primary-foreground/80 sm:text-[15px]">{description}</p>
+            )}
+            <div className="mt-5 inline-flex items-center gap-1.5 rounded-full border border-primary-foreground/20 bg-primary-foreground/10 px-3 py-1.5 text-[11px] font-medium text-primary-foreground">
+              <Activity className="h-3 w-3" />
+              Live workspace
+            </div>
           </div>
-        )}
-        <h1 className="text-[20px] font-semibold leading-tight tracking-tight text-foreground">
-          {title}
-        </h1>
-        {description && (
-          <p className="mt-1 max-w-2xl text-[13px] text-muted-foreground">{description}</p>
-        )}
-      </div>
-      <div className="flex items-center gap-2">
-        {actions ?? <DefaultWallActions title={title} />}
-      </div>
+          <div className="flex flex-wrap items-center gap-2 lg:justify-end [&>button]:border-primary-foreground/20 [&>button]:bg-primary-foreground/10 [&>button]:text-primary-foreground [&>button]:shadow-none [&>button:hover]:bg-primary-foreground/20 [&>button:last-child]:border-primary-foreground [&>button:last-child]:bg-primary-foreground [&>button:last-child]:text-primary [&>button:last-child:hover]:bg-primary-foreground/90">
+            {actions ?? <DefaultWallActions title={title} />}
+          </div>
+        </div>
+      </section>
     </div>
   );
 }
@@ -82,7 +91,7 @@ function DefaultWallActions({ title }: { title: string }) {
 }
 
 export function WallBody({ children }: { children: ReactNode }) {
-  return <div className="space-y-6 px-6 py-6">{children}</div>;
+  return <div className="mx-auto w-full max-w-[1600px] space-y-6 px-4 py-6 sm:px-6 sm:py-8 lg:px-8">{children}</div>;
 }
 
 export function Section({

@@ -172,14 +172,7 @@ export function AppSidebar({
           <span className="grid h-9 w-9 shrink-0 place-items-center rounded-xl bg-gradient-to-br from-primary to-primary-glow font-bold text-primary-foreground">
             SV
           </span>
-          {!collapsed && (
-            <span className="min-w-0 leading-tight">
-              <span className="block truncate text-sm font-semibold tracking-tight">Software Vala</span>
-              <span className="block truncate text-[10px] uppercase tracking-[0.14em] text-muted-foreground">
-                Franchise Manager
-              </span>
-            </span>
-          )}
+          {!collapsed && <span className="truncate text-sm font-semibold tracking-tight">Software Vala</span>}
         </Link>
         {!collapsed && (
           <button
