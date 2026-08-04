@@ -16,7 +16,7 @@ export function WallHeader({
   actions?: ReactNode;
 }) {
   return (
-    <div className="flex flex-wrap items-end justify-between gap-4 border-b border-border bg-surface px-6 py-5">
+    <div className="relative flex flex-wrap items-end justify-between gap-4 overflow-hidden border-b border-border bg-surface bg-[radial-gradient(70%_140%_at_0%_0%,color-mix(in_oklab,var(--color-primary)_22%,transparent),transparent_70%),radial-gradient(50%_120%_at_100%_0%,color-mix(in_oklab,var(--color-accent-pink)_12%,transparent),transparent_70%)] px-6 py-6">
       <div className="min-w-0">
         {eyebrow && (
           <div className="mb-1 flex items-center gap-1.5 text-[11px] font-medium uppercase tracking-[0.14em] text-muted-foreground">
