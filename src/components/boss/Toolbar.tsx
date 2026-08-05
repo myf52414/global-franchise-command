@@ -172,7 +172,7 @@ export function Pagination({
             id={sizeId}
             value={pageSize}
             onChange={(e) => onPageSize(Number(e.target.value))}
-            className="h-8 rounded-md border border-border bg-surface px-1.5 text-[12px] text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[color:var(--color-ring)]"
+            className="h-9 rounded-md border border-border bg-surface px-1.5 text-[12px] text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[color:var(--color-ring)]"
           >
             {[10, 25, 50, 100].map((n) => (
               <option key={n} value={n}>
@@ -182,16 +182,31 @@ export function Pagination({
           </select>
         </label>
         <div className="flex items-center gap-1">
-          <button onClick={() => onPage(Math.max(1, page - 1))} disabled={page <= 1} className={btn}>
-            Prev
+          <button
+            type="button"
+            onClick={() => onPage(Math.max(1, page - 1))}
+            disabled={page <= 1}
+            aria-label="Previous page"
+            className={btn}
+          >
+            <ChevronLeft className="h-3.5 w-3.5" aria-hidden="true" />
+            <span className="hidden sm:inline">Prev</span>
           </button>
           <span className="px-1 tabular-nums">
             <span className="font-medium text-foreground">{page}</span> / {totalPages}
           </span>
-          <button onClick={() => onPage(Math.min(totalPages, page + 1))} disabled={page >= totalPages} className={btn}>
-            Next
+          <button
+            type="button"
+            onClick={() => onPage(Math.min(totalPages, page + 1))}
+            disabled={page >= totalPages}
+            aria-label="Next page"
+            className={btn}
+          >
+            <span className="hidden sm:inline">Next</span>
+            <ChevronRight className="h-3.5 w-3.5" aria-hidden="true" />
           </button>
         </div>
+
       </div>
     </nav>
   );
