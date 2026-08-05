@@ -136,12 +136,12 @@ export function EnterpriseTable<T extends { id: string }>({
 
   return (
     <Card padded={false} className="overflow-hidden">
-      <div className="overflow-x-auto">
+      <div className="max-h-[70vh] overflow-auto">
         <table className="w-full text-left">
-          <thead className="bg-surface-2 text-[11px] uppercase tracking-wider text-muted-foreground">
+          <thead className="sticky top-0 z-10 bg-surface-2 text-[11px] uppercase tracking-wider text-muted-foreground shadow-[0_1px_0_0_var(--color-border)]">
             <tr>
               {selectable && (
-                <th className="w-9 px-4 py-2.5">
+                <th scope="col" className="w-9 px-4 py-2.5">
                   <input
                     type="checkbox"
                     checked={!!allSelected}
@@ -151,30 +151,49 @@ export function EnterpriseTable<T extends { id: string }>({
                   />
                 </th>
               )}
-              {columns.map((c) => (
-                <th
-                  key={c.id}
-                  style={c.width ? { width: c.width } : undefined}
-                  className="whitespace-nowrap px-4 py-2.5 font-medium"
-                >
-                  {c.sortable && onSort ? (
-                    <button
-                      onClick={() => onSort(c.id)}
-                      className="inline-flex items-center gap-1 hover:text-foreground"
-                    >
-                      {c.header}
-                      <ArrowUpDown className="h-3 w-3 opacity-60" />
-                      {sortBy === c.id && (
-                        <span className="text-[10px]">{sortDir === "asc" ? "↑" : "↓"}</span>
-                      )}
-                    </button>
-                  ) : (
-                    c.header
-                  )}
-                </th>
-              ))}
+              {columns.map((c) => {
+                const active = sortBy === c.id;
+                const SortIcon = !active ? ArrowUpDown : sortDir === "asc" ? ArrowUp : ArrowDown;
+                return (
+                  <th
+                    key={c.id}
+                    scope="col"
+                    style={c.width ? { width: c.width } : undefined}
+                    aria-sort={
+                      c.sortable
+                        ? active
+                          ? sortDir === "asc"
+                            ? "ascending"
+                            : "descending"
+                          : "none"
+                        : undefined
+                    }
+                    className="whitespace-nowrap px-4 py-2 font-medium"
+                  >
+                    {c.sortable && onSort ? (
+                      <button
+                        type="button"
+                        onClick={() => onSort(c.id)}
+                        title={`Sort by ${c.header}`}
+                        className={`-mx-1.5 inline-flex h-8 items-center gap-1.5 rounded-md px-1.5 uppercase tracking-wider transition-colors hover:bg-surface hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[color:var(--color-ring)] ${
+                          active ? "text-foreground" : ""
+                        }`}
+                      >
+                        {c.header}
+                        <SortIcon
+                          className={`h-3 w-3 transition-opacity ${active ? "opacity-100 text-primary" : "opacity-50"}`}
+                          aria-hidden="true"
+                        />
+                      </button>
+                    ) : (
+                      c.header
+                    )}
+                  </th>
+                );
+              })}
             </tr>
           </thead>
+
           <tbody>{body()}</tbody>
         </table>
       </div>
