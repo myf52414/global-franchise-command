@@ -69,9 +69,13 @@ export function EnterpriseTable<T extends { id: string }>({
         <tr>
           <td
             colSpan={columns.length + (selectable ? 1 : 0)}
-            className="px-4 py-14 text-center text-[12.5px] text-destructive"
+            className="px-4 py-14 text-center"
           >
-            {error}
+            <div className="mx-auto grid h-10 w-10 place-items-center rounded-full bg-[color:color-mix(in_oklab,var(--destructive)_12%,transparent)] text-destructive">
+              <AlertCircle className="h-4 w-4" />
+            </div>
+            <div className="mt-3 text-[13px] font-medium text-destructive">Couldn’t load records</div>
+            <div className="mx-auto mt-1 max-w-md text-[12px] text-muted-foreground">{error}</div>
           </td>
         </tr>
       );
@@ -83,7 +87,10 @@ export function EnterpriseTable<T extends { id: string }>({
             colSpan={columns.length + (selectable ? 1 : 0)}
             className="px-4 py-16 text-center"
           >
-            <div className="text-[13px] font-medium text-foreground">{emptyTitle}</div>
+            <div className="mx-auto grid h-10 w-10 place-items-center rounded-full border border-dashed border-border-strong text-muted-foreground">
+              <Inbox className="h-4 w-4" />
+            </div>
+            <div className="mt-3 text-[13px] font-medium text-foreground">{emptyTitle}</div>
             <div className="mx-auto mt-1 max-w-md text-[12px] text-muted-foreground">
               {emptyDescription}
             </div>
@@ -91,6 +98,7 @@ export function EnterpriseTable<T extends { id: string }>({
         </tr>
       );
     }
+
     return rows.map((r) => (
       <tr
         key={r.id}
