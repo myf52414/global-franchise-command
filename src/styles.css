@@ -123,6 +123,10 @@
 @layer base {
   * { border-color: var(--color-border); }
   html, body { height: 100%; }
+  html {
+    scroll-behavior: smooth;
+    -webkit-text-size-adjust: 100%;
+  }
   html, body {
     background-color: var(--color-background);
     color: var(--color-foreground);
@@ -134,8 +138,54 @@
       radial-gradient(50% 35% at 90% 10%, oklch(0.78 0.16 350 / 0.1), transparent 60%);
     background-attachment: fixed;
     -webkit-font-smoothing: antialiased;
+    text-rendering: optimizeLegibility;
+  }
+
+  ::selection {
+    background: color-mix(in oklab, var(--color-primary) 45%, transparent);
+    color: var(--color-primary-foreground);
+  }
+
+  /* Consistent, unobtrusive scrollbars across the whole panel */
+  * {
+    scrollbar-width: thin;
+    scrollbar-color: var(--color-border-strong) transparent;
+  }
+  ::-webkit-scrollbar { width: 10px; height: 10px; }
+  ::-webkit-scrollbar-track { background: transparent; }
+  ::-webkit-scrollbar-thumb {
+    background: var(--color-border-strong);
+    border: 3px solid transparent;
+    background-clip: content-box;
+    border-radius: 999px;
+  }
+  ::-webkit-scrollbar-thumb:hover {
+    background: color-mix(in oklab, var(--color-primary) 55%, var(--color-border-strong));
+    background-clip: content-box;
+  }
+
+  /* Global keyboard focus baseline — nothing is ever focusable-but-invisible */
+  :focus-visible {
+    outline: 2px solid var(--color-ring);
+    outline-offset: 2px;
+  }
+
+  [hidden] { display: none !important; }
+}
+
+/* Respect the OS "reduce motion" setting across every animation in the panel */
+@media (prefers-reduced-motion: reduce) {
+  html { scroll-behavior: auto; }
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.001ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.001ms !important;
+    scroll-behavior: auto !important;
   }
 }
+
 
 @utility bento-card {
   background-color: var(--color-card);
