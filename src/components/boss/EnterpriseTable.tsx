@@ -1,5 +1,5 @@
 import type { ReactNode } from "react";
-import { ArrowUpDown } from "lucide-react";
+import { AlertCircle, ArrowDown, ArrowUp, ArrowUpDown, Inbox } from "lucide-react";
 import { Pagination } from "./Toolbar";
 import { Card } from "./Wall";
 
