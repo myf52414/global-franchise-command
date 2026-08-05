@@ -152,7 +152,8 @@ export function Pagination({
   const start = total === 0 ? 0 : (page - 1) * pageSize + 1;
   const end = Math.min(page * pageSize, total);
   const btn =
-    "inline-flex h-8 min-w-11 items-center justify-center rounded-md border border-border bg-surface px-2 text-[12px] text-foreground transition-colors hover:bg-surface-2 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[color:var(--color-ring)] disabled:pointer-events-none disabled:opacity-50";
+    "inline-flex h-9 min-w-11 items-center justify-center gap-1 rounded-md border border-border bg-surface px-2.5 text-[12px] font-medium text-foreground transition-colors hover:bg-surface-2 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[color:var(--color-ring)] disabled:pointer-events-none disabled:opacity-50";
+
 
   return (
     <nav
