@@ -70,11 +70,12 @@ export function KpiCard({
                 type="button"
                 tabIndex={0}
                 aria-label={`About ${label}`}
-                className="grid h-4 w-4 place-items-center rounded text-muted-foreground/70 transition-colors hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[color:var(--color-ring)]"
+                className="-m-1.5 grid h-7 w-7 place-items-center rounded-md text-muted-foreground/70 transition-colors hover:bg-surface-2 hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[color:var(--color-ring)]"
                 onClick={(e) => e.preventDefault()}
               >
                 <HelpCircle className="h-3.5 w-3.5" />
               </button>
+
             </Tip>
           )}
         </div>

@@ -1,5 +1,5 @@
 import { useId, type ReactNode } from "react";
-import { ChevronDown, Search, SlidersHorizontal, X } from "lucide-react";
+import { ChevronDown, ChevronLeft, ChevronRight, Search, SlidersHorizontal, X } from "lucide-react";
 
 export type FilterChip = { id: string; label: string; onRemove?: () => void };
 
@@ -152,7 +152,8 @@ export function Pagination({
   const start = total === 0 ? 0 : (page - 1) * pageSize + 1;
   const end = Math.min(page * pageSize, total);
   const btn =
-    "inline-flex h-8 min-w-11 items-center justify-center rounded-md border border-border bg-surface px-2 text-[12px] text-foreground transition-colors hover:bg-surface-2 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[color:var(--color-ring)] disabled:pointer-events-none disabled:opacity-50";
+    "inline-flex h-9 min-w-11 items-center justify-center gap-1 rounded-md border border-border bg-surface px-2.5 text-[12px] font-medium text-foreground transition-colors hover:bg-surface-2 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[color:var(--color-ring)] disabled:pointer-events-none disabled:opacity-50";
+
 
   return (
     <nav
@@ -171,7 +172,7 @@ export function Pagination({
             id={sizeId}
             value={pageSize}
             onChange={(e) => onPageSize(Number(e.target.value))}
-            className="h-8 rounded-md border border-border bg-surface px-1.5 text-[12px] text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[color:var(--color-ring)]"
+            className="h-9 rounded-md border border-border bg-surface px-1.5 text-[12px] text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[color:var(--color-ring)]"
           >
             {[10, 25, 50, 100].map((n) => (
               <option key={n} value={n}>
@@ -181,16 +182,31 @@ export function Pagination({
           </select>
         </label>
         <div className="flex items-center gap-1">
-          <button onClick={() => onPage(Math.max(1, page - 1))} disabled={page <= 1} className={btn}>
-            Prev
+          <button
+            type="button"
+            onClick={() => onPage(Math.max(1, page - 1))}
+            disabled={page <= 1}
+            aria-label="Previous page"
+            className={btn}
+          >
+            <ChevronLeft className="h-3.5 w-3.5" aria-hidden="true" />
+            <span className="hidden sm:inline">Prev</span>
           </button>
           <span className="px-1 tabular-nums">
             <span className="font-medium text-foreground">{page}</span> / {totalPages}
           </span>
-          <button onClick={() => onPage(Math.min(totalPages, page + 1))} disabled={page >= totalPages} className={btn}>
-            Next
+          <button
+            type="button"
+            onClick={() => onPage(Math.min(totalPages, page + 1))}
+            disabled={page >= totalPages}
+            aria-label="Next page"
+            className={btn}
+          >
+            <span className="hidden sm:inline">Next</span>
+            <ChevronRight className="h-3.5 w-3.5" aria-hidden="true" />
           </button>
         </div>
+
       </div>
     </nav>
   );
