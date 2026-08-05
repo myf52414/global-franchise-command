@@ -139,8 +139,21 @@ function RootComponent() {
 
 function BossShell() {
   const { collapsed, toggleCollapsed, mobileOpen, setMobileOpen } = useSidebarState();
+  const isLoading = useRouterState({ select: (s) => s.status === "pending" });
+  const pathname = useRouterState({ select: (s) => s.location.pathname });
+
+  // Enterprise expectation: navigating a wall starts you at the top of it.
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+    window.scrollTo({ top: 0, behavior: "auto" });
+  }, [pathname]);
+
   return (
     <div className="flex min-h-screen w-full">
+      <a href="#main-content" className="skip-link">
+        Skip to main content
+      </a>
+      {isLoading && <div className="route-progress" role="status" aria-label="Loading page" />}
       <AppSidebar
         collapsed={collapsed}
         onToggleCollapsed={toggleCollapsed}
@@ -149,11 +162,13 @@ function BossShell() {
       />
       <div className="flex min-w-0 flex-1 flex-col">
         <TopBar onOpenMenu={() => setMobileOpen(true)} />
-        <main className="min-w-0 flex-1">
-          <Outlet />
+        <main id="main-content" tabIndex={-1} className="min-w-0 flex-1 focus:outline-none">
+          <div key={pathname} className="page-enter">
+            <Outlet />
+          </div>
         </main>
       </div>
     </div>
   );
-
 }
+
