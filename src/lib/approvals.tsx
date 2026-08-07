@@ -8,7 +8,7 @@ import {
 } from "react";
 import { useQueryClient } from "@tanstack/react-query";
 import type { AuditEntry, License } from "./data-hooks";
-import { createLicense, saveDocuments, writeAudit } from "./api.functions";
+import { createLicense, renewLicense, saveDocuments, writeAudit } from "./api.functions";
 import { useSession } from "./session";
 
 // In-memory approval + document workflow. Wire submit/approve/reject and
