@@ -6,7 +6,6 @@ import { Toolbar } from "@/components/boss/Toolbar";
 import { EnterpriseTable, type Column } from "@/components/boss/EnterpriseTable";
 import { StatusBadge } from "@/components/boss/StatusBadge";
 import { RightPanel } from "@/components/boss/RightPanel";
-import { BackendBanner } from "@/components/boss/BackendBanner";
 import {
   APPLICATION_PIPELINE,
   STAGE_LABEL,
@@ -119,7 +118,6 @@ function ApplicationsWall() {
           <Btn variant="primary" onClick={() => setNewOpen(true)}><Plus className="h-3.5 w-3.5" /> New Application</Btn>
         </>}
       />
-      <BackendBanner />
       <WallBody>
         <div className="wall-grid">
           <Stat label="New" />

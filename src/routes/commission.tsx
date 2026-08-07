@@ -6,7 +6,6 @@ import { Toolbar } from "@/components/boss/Toolbar";
 import { EnterpriseTable, type Column } from "@/components/boss/EnterpriseTable";
 import { StatusBadge } from "@/components/boss/StatusBadge";
 import { RightPanel } from "@/components/boss/RightPanel";
-import { BackendBanner } from "@/components/boss/BackendBanner";
 import { AuditTimeline } from "@/components/boss/AuditTimeline";
 import {
   useCommissionRules,
@@ -137,7 +136,6 @@ function CommissionWall() {
           <Btn variant="primary" disabled={!canApprove}>Run Payout Cycle</Btn>
         </>}
       />
-      <BackendBanner />
       <WallBody>
         <div className="wall-grid">
           <Stat label="Commission Payable" tone="warning" value={totals.payable ? fmtMoney(totals.payable) : undefined} />

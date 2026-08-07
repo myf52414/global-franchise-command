@@ -5,7 +5,6 @@ import { Toolbar } from "@/components/boss/Toolbar";
 import { EnterpriseTable, type Column } from "@/components/boss/EnterpriseTable";
 import { StatusBadge } from "@/components/boss/StatusBadge";
 import { RightPanel } from "@/components/boss/RightPanel";
-import { BackendBanner } from "@/components/boss/BackendBanner";
 import { KpiCard, KpiGrid } from "@/components/boss/KpiCard";
 import { FilterSelect } from "@/components/boss/FilterSelect";
 import { BulkBar } from "@/components/boss/BulkBar";
@@ -224,7 +223,6 @@ function DirectoryWall() {
           </>
         }
       />
-      <BackendBanner />
       <WallBody>
         <KpiGrid>
           <KpiCard label="Total Franchises" value={kpis.total || undefined} loading={isLoading} icon={<Building2 className="h-3.5 w-3.5" />} help="Every franchise record across all countries." />

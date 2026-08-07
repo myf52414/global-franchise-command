@@ -3,7 +3,6 @@ import { useMemo, useState } from "react";
 import { Btn, Card, Section, Stat, WallBody, WallHeader } from "@/components/boss/Wall";
 import { Toolbar } from "@/components/boss/Toolbar";
 import { EnterpriseTable, type Column } from "@/components/boss/EnterpriseTable";
-import { BackendBanner } from "@/components/boss/BackendBanner";
 import { useTerritories, type Territory } from "@/lib/data-hooks";
 import { useCan } from "@/lib/session";
 import { useToast } from "@/lib/toast";
@@ -92,7 +91,6 @@ function RegionsWall() {
           <Btn variant="primary" disabled={!canAssign}><Plus className="h-3.5 w-3.5" /> Assign Territory</Btn>
         </>}
       />
-      <BackendBanner />
       <WallBody>
         <div className="wall-grid">
           <Stat label="Regions" />

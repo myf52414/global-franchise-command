@@ -6,6 +6,7 @@ import { Toolbar } from "@/components/boss/Toolbar";
 import { StatusBadge } from "@/components/boss/StatusBadge";
 import { ExportMenu } from "@/components/boss/ExportMenu";
 import { useDocuments, type StoredDocument } from "@/lib/approvals";
+import { useDocumentRecords } from "@/lib/data-hooks";
 import { FileText } from "lucide-react";
 
 export const Route = createFileRoute("/documents")({
@@ -16,7 +17,32 @@ export const Route = createFileRoute("/documents")({
 const CATEGORIES = ["all", "kyc", "compliance"] as const;
 
 function DocumentsWall() {
-  const documents = useDocuments();
+  const local = useDocuments();
+  const { data: stored = [] } = useDocumentRecords();
+  const documents = useMemo<StoredDocument[]>(() => {
+    const fromDb: StoredDocument[] = stored.map((d) => ({
+      id: d.id,
+      name: d.name,
+      size: d.size,
+      type: "application/pdf",
+      kind: d.kind,
+      category: d.category,
+      scope: d.scope,
+      targetId: d.targetId,
+      targetLabel: d.targetLabel,
+      franchise: d.franchise ?? undefined,
+      uploadedBy: "—",
+      uploadedAt: d.uploadedAt,
+      status:
+        d.status === "verified"
+          ? "verified"
+          : d.status === "attached"
+            ? "attached"
+            : "pending_review",
+    }));
+    const seen = new Set(fromDb.map((d) => `${d.name}|${d.targetId}`));
+    return [...local.filter((d) => !seen.has(`${d.name}|${d.targetId}`)), ...fromDb];
+  }, [local, stored]);
   const [tab, setTab] = useState<(typeof CATEGORIES)[number]>("all");
   const [search, setSearch] = useState("");
 

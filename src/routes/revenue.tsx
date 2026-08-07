@@ -4,7 +4,6 @@ import { Btn, Card, Stat, Section, WallBody, WallHeader } from "@/components/bos
 import { Toolbar } from "@/components/boss/Toolbar";
 import { EnterpriseTable, type Column } from "@/components/boss/EnterpriseTable";
 import { StatusBadge } from "@/components/boss/StatusBadge";
-import { BackendBanner } from "@/components/boss/BackendBanner";
 import { ExportMenu } from "@/components/boss/ExportMenu";
 import { RevenueCharts } from "@/components/boss/RevenueCharts";
 import {
@@ -135,7 +134,6 @@ function RevenueWall() {
           />
         </>}
       />
-      <BackendBanner />
       <WallBody>
         <div className="wall-grid">
           <Stat label="MTD Revenue" tone="info" value={v(kpi?.mtd)} />

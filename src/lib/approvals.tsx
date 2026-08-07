@@ -6,7 +6,9 @@ import {
   useState,
   type ReactNode,
 } from "react";
+import { useQueryClient } from "@tanstack/react-query";
 import type { AuditEntry, License } from "./data-hooks";
+import { createLicense, renewLicense, saveDocuments, writeAudit } from "./api.functions";
 import { useSession } from "./session";
 
 // In-memory approval + document workflow. Wire submit/approve/reject and
@@ -105,6 +107,7 @@ const KIND_LABEL: Record<ApprovalKind, string> = {
 
 export function ApprovalsProvider({ children }: { children: ReactNode }) {
   const { name } = useSession();
+  const queryClient = useQueryClient();
   const [requests, setRequests] = useState<ApprovalRequest[]>([]);
   const [audit, setAudit] = useState<LocalAuditEntry[]>([]);
   const [documents, setDocuments] = useState<StoredDocument[]>([]);
@@ -196,12 +199,21 @@ export function ApprovalsProvider({ children }: { children: ReactNode }) {
                   : l,
               ),
             );
+            const uuid =
+              /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+            req.targetIds
+              .filter((t) => uuid.test(t))
+              .forEach((t) => {
+                void renewLicense({ data: { id: t, expiresAt: nextExpiry } })
+                  .then(() => queryClient.invalidateQueries({ queryKey: ["licenses"] }))
+                  .catch(() => undefined);
+              });
           }
         }
         return cur.map((r) => (r.id === id ? updated : r));
       });
     },
-    [name, appendAudit],
+    [name, appendAudit, queryClient],
   );
 
   const registerDocuments: Ctx["registerDocuments"] = useCallback(
@@ -219,6 +231,22 @@ export function ApprovalsProvider({ children }: { children: ReactNode }) {
         status,
       }));
       setDocuments((cur) => [...stored, ...cur]);
+      void saveDocuments({
+        data: {
+          documents: stored.map((d) => ({
+            name: d.name,
+            category: d.category,
+            kind: d.kind,
+            franchise: d.franchise ?? null,
+            scope: d.scope,
+            targetId: d.targetId,
+            targetLabel: d.targetLabel,
+            size: d.size,
+          })),
+        },
+      })
+        .then(() => queryClient.invalidateQueries({ queryKey: ["documents"] }))
+        .catch(() => undefined);
       appendAudit([
         {
           id: uid(),
@@ -231,10 +259,22 @@ export function ApprovalsProvider({ children }: { children: ReactNode }) {
           targetId,
         },
       ]);
+      void writeAudit({
+        data: {
+          actor: name,
+          action,
+          target: targetId,
+          scope,
+          meta: docs.map((d) => d.name).join(", "),
+        },
+      })
+        .then(() => queryClient.invalidateQueries({ queryKey: ["audit"] }))
+        .catch(() => undefined);
       return stored;
     },
-    [name, appendAudit],
+    [name, appendAudit, queryClient],
   );
+
 
   const registerLicense: Ctx["registerLicense"] = useCallback(
     (input) => {
@@ -257,6 +297,24 @@ export function ApprovalsProvider({ children }: { children: ReactNode }) {
         complianceCleared: input.complianceCleared,
       };
       setLicenses((cur) => [license, ...cur]);
+      void createLicense({
+        data: {
+          key: license.key,
+          franchiseId: null,
+          franchise: license.franchise,
+          plan: license.plan,
+          devicesMax: license.devicesMax,
+          domainsMax: license.domainsMax,
+          expiresAt: license.expiresAt,
+          kycVerified: license.kycVerified,
+          complianceCleared: license.complianceCleared,
+        },
+      })
+        .then(async () => {
+          await queryClient.invalidateQueries({ queryKey: ["licenses"] });
+          setLicenses((cur) => cur.filter((l) => l.id !== license.id));
+        })
+        .catch(() => undefined);
       appendAudit([
         {
           id: uid(),
@@ -269,9 +327,20 @@ export function ApprovalsProvider({ children }: { children: ReactNode }) {
           targetId: license.id,
         },
       ]);
+      void writeAudit({
+        data: {
+          actor: name,
+          action: "generated license",
+          target: license.key,
+          scope: "license",
+          meta: `${license.franchise} · ${license.plan}`,
+        },
+      })
+        .then(() => queryClient.invalidateQueries({ queryKey: ["audit"] }))
+        .catch(() => undefined);
       return license;
     },
-    [name, appendAudit],
+    [name, appendAudit, queryClient],
   );
 
   const value = useMemo<Ctx>(

@@ -1,5 +1,5 @@
-// Centralised data hooks. Wire these to Lovable Cloud (createServerFn +
-// useSuspenseQuery) when the backend is enabled — UI does not change.
+// Centralised data hooks — wired to the real Lovable Cloud backend through
+// the server-function API layer in src/lib/api.functions.ts.
 
 import { useQuery } from "@tanstack/react-query";
 import type {
@@ -8,6 +8,19 @@ import type {
   FranchiseTier,
   RiskLevel,
 } from "./franchise-domain";
+import {
+  getRevenueKpis,
+  listApplications,
+  listAudit,
+  listCommissionRules,
+  listCommissions,
+  listDocuments,
+  listFranchises,
+  listInvoices,
+  listLeads,
+  listLicenses,
+  listTerritories,
+} from "./api.functions";
 
 export type Application = {
   id: string;
@@ -51,6 +64,19 @@ export type Territory = {
   population: number;
   marketSize: number;
   locked: boolean;
+};
+
+export type Lead = {
+  id: string;
+  name: string;
+  company: string;
+  country: string;
+  source: string;
+  stage: string;
+  owner: string | null;
+  score: number;
+  nextAction: string | null;
+  createdAt: string;
 };
 
 export type LicenseStatus =
@@ -158,35 +184,96 @@ export type AuditEntry = {
   meta?: string;
 };
 
-// Generic empty responder. Replace queryFn with real server fn calls.
-// e.g. queryFn: () => useServerFn(getApplications)({ data: params })
-function emptyResource<T>(key: string) {
-  return useQuery<T[]>({
-    queryKey: [key],
-    queryFn: async () => [],
-    staleTime: Infinity,
+export type DocumentRecord = {
+  id: string;
+  name: string;
+  category: "kyc" | "compliance";
+  kind: string;
+  franchise: string | null;
+  scope: string;
+  targetId: string;
+  targetLabel: string;
+  size: number;
+  status: string;
+  uploadedAt: string;
+};
+
+const STALE = 30_000;
+
+export const useApplications = () =>
+  useQuery<Application[]>({
+    queryKey: ["applications"],
+    queryFn: () => listApplications() as Promise<Application[]>,
+    staleTime: STALE,
   });
-}
 
-export const useApplications = () => emptyResource<Application>("applications");
-export const useFranchises = () => emptyResource<Franchise>("franchises");
-export const useTerritories = () => emptyResource<Territory>("territories");
+export const useFranchises = () =>
+  useQuery<Franchise[]>({
+    queryKey: ["franchises"],
+    queryFn: () => listFranchises() as Promise<Franchise[]>,
+    staleTime: STALE,
+  });
 
-export const useLicenses = () => emptyResource<License>("licenses");
-export const useCommissionRules = () => emptyResource<CommissionRule>("commission-rules");
-export const useCommissions = () => emptyResource<Commission>("commissions");
-export const useInvoices = () => emptyResource<Invoice>("invoices");
+export const useTerritories = () =>
+  useQuery<Territory[]>({
+    queryKey: ["territories"],
+    queryFn: () => listTerritories() as Promise<Territory[]>,
+    staleTime: STALE,
+  });
+
+export const useLeads = () =>
+  useQuery<Lead[]>({
+    queryKey: ["leads"],
+    queryFn: () => listLeads() as Promise<Lead[]>,
+    staleTime: STALE,
+  });
+
+export const useLicenses = () =>
+  useQuery<License[]>({
+    queryKey: ["licenses"],
+    queryFn: () => listLicenses() as Promise<License[]>,
+    staleTime: STALE,
+  });
+
+export const useCommissionRules = () =>
+  useQuery<CommissionRule[]>({
+    queryKey: ["commission-rules"],
+    queryFn: () => listCommissionRules() as Promise<CommissionRule[]>,
+    staleTime: STALE,
+  });
+
+export const useCommissions = () =>
+  useQuery<Commission[]>({
+    queryKey: ["commissions"],
+    queryFn: () => listCommissions() as Promise<Commission[]>,
+    staleTime: STALE,
+  });
+
+export const useInvoices = () =>
+  useQuery<Invoice[]>({
+    queryKey: ["invoices"],
+    queryFn: () => listInvoices() as Promise<Invoice[]>,
+    staleTime: STALE,
+  });
+
+export const useDocumentRecords = () =>
+  useQuery<DocumentRecord[]>({
+    queryKey: ["documents"],
+    queryFn: () => listDocuments() as Promise<DocumentRecord[]>,
+    staleTime: STALE,
+  });
 
 export const useRevenueKpis = () =>
   useQuery<RevenueKpis | null>({
     queryKey: ["revenue-kpis"],
-    queryFn: async () => null,
-    staleTime: Infinity,
+    queryFn: () => getRevenueKpis() as Promise<RevenueKpis>,
+    staleTime: STALE,
   });
 
 export const useAuditTrail = (scope: string, targetId?: string) =>
   useQuery<AuditEntry[]>({
     queryKey: ["audit", scope, targetId ?? "*"],
-    queryFn: async () => [],
-    staleTime: Infinity,
+    queryFn: () =>
+      listAudit({ data: { scope, targetId } }) as Promise<AuditEntry[]>,
+    staleTime: STALE,
   });
