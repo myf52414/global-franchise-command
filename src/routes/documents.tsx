@@ -6,6 +6,7 @@ import { Toolbar } from "@/components/boss/Toolbar";
 import { StatusBadge } from "@/components/boss/StatusBadge";
 import { ExportMenu } from "@/components/boss/ExportMenu";
 import { useDocuments, type StoredDocument } from "@/lib/approvals";
+import { useDocumentRecords } from "@/lib/data-hooks";
 import { FileText } from "lucide-react";
 
 export const Route = createFileRoute("/documents")({
