@@ -143,6 +143,9 @@ function BossShell() {
   const { collapsed, toggleCollapsed, mobileOpen, setMobileOpen } = useSidebarState();
   const isLoading = useRouterState({ select: (s) => s.status === "pending" });
   const pathname = useRouterState({ select: (s) => s.location.pathname });
+  const [hydrated, setHydrated] = useState(false);
+
+  useEffect(() => setHydrated(true), []);
 
   // Enterprise expectation: navigating a wall starts you at the top of it.
   useEffect(() => {
@@ -155,13 +158,9 @@ function BossShell() {
       <a href="#main-content" className="skip-link">
         Skip to main content
       </a>
-      <div
-        className="route-progress"
-        role="status"
-        aria-label="Loading page"
-        hidden={!isLoading}
-        style={isLoading ? undefined : { display: "none" }}
-      />
+      {hydrated && isLoading && (
+        <div className="route-progress" role="status" aria-label="Loading page" />
+      )}
       <AppSidebar
         collapsed={collapsed}
         onToggleCollapsed={toggleCollapsed}
