@@ -288,6 +288,24 @@ export function ApprovalsProvider({ children }: { children: ReactNode }) {
         complianceCleared: input.complianceCleared,
       };
       setLicenses((cur) => [license, ...cur]);
+      void createLicense({
+        data: {
+          key: license.key,
+          franchiseId: null,
+          franchise: license.franchise,
+          plan: license.plan,
+          devicesMax: license.devicesMax,
+          domainsMax: license.domainsMax,
+          expiresAt: license.expiresAt,
+          kycVerified: license.kycVerified,
+          complianceCleared: license.complianceCleared,
+        },
+      })
+        .then(async () => {
+          await queryClient.invalidateQueries({ queryKey: ["licenses"] });
+          setLicenses((cur) => cur.filter((l) => l.id !== license.id));
+        })
+        .catch(() => undefined);
       appendAudit([
         {
           id: uid(),
@@ -300,9 +318,20 @@ export function ApprovalsProvider({ children }: { children: ReactNode }) {
           targetId: license.id,
         },
       ]);
+      void writeAudit({
+        data: {
+          actor: name,
+          action: "generated license",
+          target: license.key,
+          scope: "license",
+          meta: `${license.franchise} · ${license.plan}`,
+        },
+      })
+        .then(() => queryClient.invalidateQueries({ queryKey: ["audit"] }))
+        .catch(() => undefined);
       return license;
     },
-    [name, appendAudit],
+    [name, appendAudit, queryClient],
   );
 
   const value = useMemo<Ctx>(
