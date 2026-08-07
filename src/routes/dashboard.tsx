@@ -1,6 +1,5 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { Card, Section, Stat, WallBody, WallHeader, Btn } from "@/components/boss/Wall";
-import { BackendBanner } from "@/components/boss/BackendBanner";
 import { useShortcuts } from "@/lib/shortcuts";
 import { useToast } from "@/lib/toast";
 import { Activity, ArrowUpRight, ShieldAlert, Sparkles } from "lucide-react";
@@ -73,7 +72,6 @@ function DashboardWall() {
           </>
         }
       />
-      <BackendBanner />
       <WallBody>
         {KPI_GROUPS.map((g) => (
           <Section key={g.title} title={g.title}>
