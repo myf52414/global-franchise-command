@@ -107,6 +107,7 @@ const KIND_LABEL: Record<ApprovalKind, string> = {
 
 export function ApprovalsProvider({ children }: { children: ReactNode }) {
   const { name } = useSession();
+  const queryClient = useQueryClient();
   const [requests, setRequests] = useState<ApprovalRequest[]>([]);
   const [audit, setAudit] = useState<LocalAuditEntry[]>([]);
   const [documents, setDocuments] = useState<StoredDocument[]>([]);
