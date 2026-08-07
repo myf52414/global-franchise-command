@@ -155,7 +155,13 @@ function BossShell() {
       <a href="#main-content" className="skip-link">
         Skip to main content
       </a>
-      {isLoading && <div className="route-progress" role="status" aria-label="Loading page" />}
+      <div
+        className="route-progress"
+        role="status"
+        aria-label="Loading page"
+        hidden={!isLoading}
+        style={isLoading ? undefined : { display: "none" }}
+      />
       <AppSidebar
         collapsed={collapsed}
         onToggleCollapsed={toggleCollapsed}
