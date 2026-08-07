@@ -199,12 +199,21 @@ export function ApprovalsProvider({ children }: { children: ReactNode }) {
                   : l,
               ),
             );
+            const uuid =
+              /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+            req.targetIds
+              .filter((t) => uuid.test(t))
+              .forEach((t) => {
+                void renewLicense({ data: { id: t, expiresAt: nextExpiry } })
+                  .then(() => queryClient.invalidateQueries({ queryKey: ["licenses"] }))
+                  .catch(() => undefined);
+              });
           }
         }
         return cur.map((r) => (r.id === id ? updated : r));
       });
     },
-    [name, appendAudit],
+    [name, appendAudit, queryClient],
   );
 
   const registerDocuments: Ctx["registerDocuments"] = useCallback(
