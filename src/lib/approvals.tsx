@@ -222,6 +222,22 @@ export function ApprovalsProvider({ children }: { children: ReactNode }) {
         status,
       }));
       setDocuments((cur) => [...stored, ...cur]);
+      void saveDocuments({
+        data: {
+          documents: stored.map((d) => ({
+            name: d.name,
+            category: d.category,
+            kind: d.kind,
+            franchise: d.franchise ?? null,
+            scope: d.scope,
+            targetId: d.targetId,
+            targetLabel: d.targetLabel,
+            size: d.size,
+          })),
+        },
+      })
+        .then(() => queryClient.invalidateQueries({ queryKey: ["documents"] }))
+        .catch(() => undefined);
       appendAudit([
         {
           id: uid(),
@@ -234,10 +250,22 @@ export function ApprovalsProvider({ children }: { children: ReactNode }) {
           targetId,
         },
       ]);
+      void writeAudit({
+        data: {
+          actor: name,
+          action,
+          target: targetId,
+          scope,
+          meta: docs.map((d) => d.name).join(", "),
+        },
+      })
+        .then(() => queryClient.invalidateQueries({ queryKey: ["audit"] }))
+        .catch(() => undefined);
       return stored;
     },
-    [name, appendAudit],
+    [name, appendAudit, queryClient],
   );
+
 
   const registerLicense: Ctx["registerLicense"] = useCallback(
     (input) => {
