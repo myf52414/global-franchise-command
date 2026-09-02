@@ -29,6 +29,7 @@ import {
   X,
   type LucideIcon,
 } from "lucide-react";
+import logoAsset from "../../assets/software-vala-logo.jpg.asset.json";
 
 const COLLAPSE_KEY = "sv:sidebar:collapsed";
 
@@ -169,9 +170,11 @@ export function AppSidebar({
         }`}
       >
         <Link to="/dashboard" className="flex min-w-0 items-center gap-2" onClick={onCloseMobile}>
-          <span className="grid h-9 w-9 shrink-0 place-items-center rounded-xl bg-gradient-to-br from-primary to-primary-glow font-bold text-primary-foreground">
-            SV
-          </span>
+          <img
+            src={logoAsset.url}
+            alt="Software Vala logo"
+            className="h-9 w-9 shrink-0 rounded-full object-cover ring-1 ring-border"
+          />
           {!collapsed && <span className="truncate text-sm font-semibold tracking-tight">Software Vala</span>}
         </Link>
         {!collapsed && (
