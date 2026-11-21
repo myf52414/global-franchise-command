@@ -118,7 +118,7 @@ function ReportsWall() {
       <WallBody>
         <div className="wall-grid">
           <Stat label="Report Types" value={reports.length} />
-          <Stat label="Records Available" value={totalRecords || undefined} loading={loading} />
+          <Stat label="Records Available" value={totalRecords} loading={loading} />
           <Stat label="Invoices" value={(invoices.data ?? []).length || undefined} loading={loading} />
           <Stat label="Licenses" value={(licenses.data ?? []).length || undefined} loading={loading} />
         </div>

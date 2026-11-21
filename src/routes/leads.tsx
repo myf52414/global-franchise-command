@@ -88,7 +88,7 @@ function LeadsWall() {
           <Stat label="New Leads" value={count("new") || undefined} />
           <Stat label="Qualified" tone="info" value={count("qualified") || undefined} />
           <Stat label="In Discussion" value={count("in_discussion") || undefined} />
-          <Stat label="Converted" tone="success" value={converted || undefined} />
+          <Stat label="Converted" tone="success" value={converted} />
           <Stat label="Dropped" tone="destructive" value={count("dropped") || undefined} />
           <Stat label="Conversion Rate" value={conversionRate} />
         </div>

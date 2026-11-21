@@ -120,12 +120,12 @@ function ApplicationsWall() {
       />
       <WallBody>
         <div className="wall-grid">
-          <Stat label="New" />
-          <Stat label="Under Review" tone="warning" />
-          <Stat label="KYC Pending" tone="warning" />
-          <Stat label="Awaiting Signature" tone="info" />
-          <Stat label="Approved" tone="success" />
-          <Stat label="Rejected" tone="destructive" />
+          <Stat label="New" loading={isLoading} value={rows.filter((r) => r.stage === "submitted").length} />
+          <Stat label="Under Review" tone="warning" loading={isLoading} value={rows.filter((r) => ["reviewer_assigned","background_verification","document_verification","interview"].includes(r.stage)).length} />
+          <Stat label="KYC Pending" tone="warning" loading={isLoading} value={rows.filter((r) => !r.kycVerified && r.stage !== "rejected").length} />
+          <Stat label="Awaiting Signature" tone="info" loading={isLoading} value={rows.filter((r) => r.stage === "agreement" || r.stage === "digital_signature").length} />
+          <Stat label="Approved" tone="success" loading={isLoading} value={rows.filter((r) => r.stage === "approved").length} />
+          <Stat label="Rejected" tone="destructive" loading={isLoading} value={rows.filter((r) => r.stage === "rejected").length} />
         </div>
 
         <Section title="Workflow Pipeline">

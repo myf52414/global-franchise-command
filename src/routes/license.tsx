@@ -140,10 +140,10 @@ function LicenseWall() {
       />
       <WallBody>
         <div className="wall-grid">
-          <Stat label="Active Licenses" tone="success" value={counters.active || undefined} />
-          <Stat label="Suspended" tone="destructive" value={counters.suspended || undefined} />
-          <Stat label="Expiring < 30d" tone="warning" value={counters.expiring || undefined} />
-          <Stat label="Expired" value={counters.expired || undefined} />
+          <Stat label="Active Licenses" tone="success" value={counters.active} />
+          <Stat label="Suspended" tone="destructive" value={counters.suspended} />
+          <Stat label="Expiring < 30d" tone="warning" value={counters.expiring} />
+          <Stat label="Expired" value={counters.expired} />
           <Stat label="Avg. Devices / License" />
           <Stat label="Avg. Domains / License" />
         </div>

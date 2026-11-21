@@ -112,11 +112,11 @@ function DocumentsWall() {
       />
       <WallBody>
         <div className="wall-grid">
-          <Stat label="Total Documents" value={counters.total || undefined} />
-          <Stat label="KYC" value={counters.kyc || undefined} />
-          <Stat label="Compliance" value={counters.compliance || undefined} />
-          <Stat label="Pending Review" tone="warning" value={counters.pending || undefined} />
-          <Stat label="Verified" tone="success" value={counters.verified || undefined} />
+          <Stat label="Total Documents" value={counters.total} />
+          <Stat label="KYC" value={counters.kyc} />
+          <Stat label="Compliance" value={counters.compliance} />
+          <Stat label="Pending Review" tone="warning" value={counters.pending} />
+          <Stat label="Verified" tone="success" value={counters.verified} />
         </div>
 
         <Section title="All Documents">

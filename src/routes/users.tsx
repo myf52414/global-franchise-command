@@ -93,8 +93,8 @@ function UsersWall() {
       />
       <WallBody>
         <div className="wall-grid">
-          <Stat label="Operators" value={rows.length || undefined} loading={audit.isLoading} />
-          <Stat label="Actions Today" tone="success" value={activeToday || undefined} loading={audit.isLoading} />
+          <Stat label="Operators" value={rows.length} loading={audit.isLoading} />
+          <Stat label="Actions Today" tone="success" value={activeToday} loading={audit.isLoading} />
           <Stat label="Roles Defined" value={Object.keys(ROLE_PERMISSIONS).length} />
           <Stat
             label="Franchises Covered"

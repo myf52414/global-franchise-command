@@ -119,7 +119,7 @@ function CountriesWall() {
       />
       <WallBody>
         <div className="wall-grid">
-          <Stat label="Countries Live" value={rows.length || undefined} loading={isLoading} />
+          <Stat label="Countries Live" value={rows.length} loading={isLoading} />
           <Stat label="Franchises" value={(franchises.data ?? []).length || undefined} loading={isLoading} />
           <Stat label="Licenses" tone="info" value={(licenses.data ?? []).length || undefined} loading={isLoading} />
           <Stat label="Billed Revenue" tone="success" value={totalRevenue ? money(totalRevenue) : undefined} loading={isLoading} />

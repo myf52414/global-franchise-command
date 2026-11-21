@@ -123,16 +123,16 @@ function ComplianceWall() {
       />
       <WallBody>
         <div className="wall-grid">
-          <Stat label="KYC Verified" tone="success" value={kycOk || undefined} loading={isLoading} />
-          <Stat label="KYC Pending" tone="warning" value={kycPending || undefined} loading={isLoading} />
-          <Stat label="Expiring ≤ 60d" tone="warning" value={expiring || undefined} loading={isLoading} />
+          <Stat label="KYC Verified" tone="success" value={kycOk} loading={isLoading} />
+          <Stat label="KYC Pending" tone="warning" value={kycPending} loading={isLoading} />
+          <Stat label="Expiring ≤ 60d" tone="warning" value={expiring} loading={isLoading} />
           <Stat
             label="Docs Pending Review"
             tone="warning"
             value={(documents.data ?? []).filter((d) => d.status === "pending_review").length || undefined}
             loading={isLoading}
           />
-          <Stat label="High Risk Franchises" tone="destructive" value={highRisk || undefined} loading={isLoading} />
+          <Stat label="High Risk Franchises" tone="destructive" value={highRisk} loading={isLoading} />
         </div>
 
         <Section title="Compliance Register">

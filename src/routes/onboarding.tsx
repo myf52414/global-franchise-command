@@ -144,11 +144,11 @@ function OnboardingWall() {
       />
       <WallBody>
         <div className="wall-grid">
-          <Stat label="In Onboarding" value={inOnboarding || undefined} loading={isLoading} />
-          <Stat label="Awaiting Payment" tone="warning" value={awaitingPayment || undefined} loading={isLoading} />
-          <Stat label="Awaiting KYC" tone="warning" value={awaitingKyc || undefined} loading={isLoading} />
-          <Stat label="Fully Live" tone="success" value={live || undefined} loading={isLoading} />
-          <Stat label="Total Tracked" value={rows.length || undefined} loading={isLoading} />
+          <Stat label="In Onboarding" value={inOnboarding} loading={isLoading} />
+          <Stat label="Awaiting Payment" tone="warning" value={awaitingPayment} loading={isLoading} />
+          <Stat label="Awaiting KYC" tone="warning" value={awaitingKyc} loading={isLoading} />
+          <Stat label="Fully Live" tone="success" value={live} loading={isLoading} />
+          <Stat label="Total Tracked" value={rows.length} loading={isLoading} />
         </div>
 
         <Section title="Standard Journey">

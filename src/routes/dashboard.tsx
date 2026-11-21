@@ -122,14 +122,14 @@ function DashboardWall() {
       <WallBody>
         <Section title="Franchise Network">
           <div className="wall-grid">
-            <Stat label="Total Franchises" value={franchises.length || undefined} hint="Across all countries" />
+            <Stat label="Total Franchises" value={franchises.length} hint="Across all countries" />
             <Stat label="Active" tone="success" value={byStatus("active") || undefined} />
             <Stat label="Pending" tone="warning" value={byStatus("pending") || undefined} />
             <Stat label="Suspended" tone="destructive" value={byStatus("suspended") || undefined} />
             <Stat label="Cancelled" value={byStatus("cancelled") || undefined} />
             <Stat label="Countries" value={new Set(franchises.map((f) => f.country)).size || undefined} />
             <Stat label="States / Regions" value={new Set(territories.map((t) => t.region)).size || undefined} />
-            <Stat label="Applications" value={applications.length || undefined} />
+            <Stat label="Applications" value={applications.length} />
           </div>
         </Section>
 
@@ -137,21 +137,21 @@ function DashboardWall() {
           <div className="wall-grid">
             <Stat label="Monthly Revenue" tone="info" value={revenueMtd ? usd(revenueMtd) : undefined} />
             <Stat label="Lifetime Revenue" tone="info" value={lifetime ? usd(lifetime) : undefined} />
-            <Stat label="Invoices" value={invoices.length || undefined} />
+            <Stat label="Invoices" value={invoices.length} />
             <Stat label="Products Assigned" value={franchises.reduce((a, f) => a + f.productsAssigned, 0) || undefined} />
             <Stat
               label="License Usage"
               value={licenses.length ? `${licenses.reduce((a, l) => a + l.devices, 0)} / ${licenses.reduce((a, l) => a + l.devicesMax, 0)}` : undefined}
             />
-            <Stat label="Renewal Due" tone="warning" value={renewalDue || undefined} />
+            <Stat label="Renewal Due" tone="warning" value={renewalDue} />
           </div>
         </Section>
 
         <Section title="Attention">
           <div className="wall-grid">
             <Stat label="Overdue Invoices" value={invoices.filter((i) => i.status === "overdue").length || undefined} tone="destructive" />
-            <Stat label="Pending Approvals" tone="warning" value={pendingApprovals || undefined} />
-            <Stat label="Compliance Alerts" tone="destructive" value={complianceAlerts || undefined} />
+            <Stat label="Pending Approvals" tone="warning" value={pendingApprovals} />
+            <Stat label="Compliance Alerts" tone="destructive" value={complianceAlerts} />
           </div>
         </Section>
 

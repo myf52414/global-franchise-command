@@ -100,9 +100,9 @@ function ProductsWall() {
       />
       <WallBody>
         <div className="wall-grid">
-          <Stat label="Assigned Products" value={totalProducts || undefined} loading={isLoading} />
-          <Stat label="Franchises With Products" tone="success" value={assigned || undefined} loading={isLoading} />
-          <Stat label="Without Products" tone="warning" value={unassigned || undefined} loading={isLoading} />
+          <Stat label="Assigned Products" value={totalProducts} loading={isLoading} />
+          <Stat label="Franchises With Products" tone="success" value={assigned} loading={isLoading} />
+          <Stat label="Without Products" tone="warning" value={unassigned} loading={isLoading} />
           <Stat label="Active Licenses" tone="info" value={(licenses.data ?? []).length || undefined} loading={isLoading} />
         </div>
 

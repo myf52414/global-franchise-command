@@ -225,10 +225,10 @@ function DirectoryWall() {
       />
       <WallBody>
         <KpiGrid>
-          <KpiCard label="Total Franchises" value={kpis.total || undefined} loading={isLoading} icon={<Building2 className="h-3.5 w-3.5" />} help="Every franchise record across all countries." />
-          <KpiCard label="Active" value={kpis.active || undefined} tone="success" loading={isLoading} icon={<Award className="h-3.5 w-3.5" />} help="Franchises currently trading." />
-          <KpiCard label="Suspended" value={kpis.suspended || undefined} tone="destructive" loading={isLoading} icon={<Power className="h-3.5 w-3.5" />} help="Temporarily blocked from operating." />
-          <KpiCard label="High Risk" value={kpis.risky || undefined} tone="warning" loading={isLoading} icon={<ShieldAlert className="h-3.5 w-3.5" />} help="Risk level high or critical." />
+          <KpiCard label="Total Franchises" value={kpis.total} loading={isLoading} icon={<Building2 className="h-3.5 w-3.5" />} help="Every franchise record across all countries." />
+          <KpiCard label="Active" value={kpis.active} tone="success" loading={isLoading} icon={<Award className="h-3.5 w-3.5" />} help="Franchises currently trading." />
+          <KpiCard label="Suspended" value={kpis.suspended} tone="destructive" loading={isLoading} icon={<Power className="h-3.5 w-3.5" />} help="Temporarily blocked from operating." />
+          <KpiCard label="High Risk" value={kpis.risky} tone="warning" loading={isLoading} icon={<ShieldAlert className="h-3.5 w-3.5" />} help="Risk level high or critical." />
           <KpiCard label="Avg Health Score" value={kpis.health !== undefined ? Math.round(kpis.health) : undefined} loading={isLoading} icon={<HeartPulse className="h-3.5 w-3.5" />} help="Composite of revenue, support and compliance signals." />
           <KpiCard label="Avg Commission %" value={kpis.commission !== undefined ? `${kpis.commission.toFixed(1)}%` : undefined} loading={isLoading} icon={<Percent className="h-3.5 w-3.5" />} help="Weighted average commission rate." />
         </KpiGrid>
